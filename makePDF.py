@@ -93,10 +93,15 @@ class CmdThread ( threading.Thread ):
 		# then we reencode using the default locale's encoding.
 		# Note: we get this using ST2's own getdefaultencoding(), not the locale module
 		# We ignore bad chars in both cases.
+
+		# CHANGED 12/10/19: use platform encoding (self.caller.encoding), then
+		# keep it that way!
 		
 		data = open(self.caller.tex_base + ".log", 'r') \
-				.read().decode(self.caller.encoding, 'ignore') \
-				.encode(sublime_plugin.sys.getdefaultencoding(), 'ignore').splitlines()
+				.read().decode(self.caller.encoding, 'ignore').splitlines()
+
+				#  \
+				# .encode(sublime_plugin.sys.getdefaultencoding(), 'ignore').splitlines()
 
 		errors = []
 		warnings = []

@@ -8,6 +8,26 @@ def debug(s):
 	if print_debug:
 		print "parseTeXlog: " + s
 
+# If file is not found, ask me if we are debugging
+def debug_skip_file(f):
+	if not print_debug:
+		return False
+	debug("debug_skip_file: " + f)
+	# Heuristic: no two consecutive spaces in file name
+	if "  " in f:
+		print "Skip it!"
+		return True
+	# Heuristic: file in local directory with .tex ending
+	if f[0:2] in ['./', '.\\'] and f[-4:].upper() in ['.TEX', '.AUX', '.BBL', '.CLS', '.STY']:
+		print "File! Don't skip it"
+		return False
+	if raw_input() == "":
+		print "Skip it"
+		return True
+	else:
+		print "FILE! Don't skip it"
+		return False
+
 
 # Log parsing, TNG :-)
 # Input: tex log file (decoded), split into lines
@@ -229,7 +249,7 @@ def parse_tex_log(log):
 				break
 			else:
 				continue
-		line.strip() # get rid of initial spaces
+		line = line.strip() # get rid of initial spaces
 		# note: in the next line, and also when we check for "!", we use the fact that "and" short-circuits
 		while len(line)>0 and line[0]==')': # denotes end of processing of current file: pop it from stack
 			# files.pop()	
@@ -242,7 +262,7 @@ def parse_tex_log(log):
 				debug("Popping inexistent files")
 				break
 			line = line[1:] # lather, rinse, repeat
-		line.strip() # again, to make sure there is no ") (filename" pattern
+		line = line.strip() # again, to make sure there is no ") (filename" pattern
 		# Opening page indicators: skip and reprocess
 		pagenum_begin_match = pagenum_begin_rx.match(line)
 		if pagenum_begin_match:
@@ -263,11 +283,11 @@ def parse_tex_log(log):
 			debug("Reprocessing " + extra)
 			reprocess_extra = True
 			continue
-		file_match = file_rx.search(line) # search matches everywhere, not just at the beginning of a line
+		file_match = file_rx.match(line) # search matches everywhere, not just at the beginning of a line
 		if file_match:
 			file_name = file_match.group(1)
 			# This kills off stupid matches
-			if not os.path.isfile(file_name):
+			if (not os.path.isfile(file_name)) and debug_skip_file(file_name):
 				continue
 			# # remove quotes NO LONGER NEEDED
 			# if file_name[0] == "\"" and file_name[-1] == "\"":
@@ -302,12 +322,13 @@ def parse_tex_log(log):
 
 if __name__ == '__main__':
 	print_debug = True
-	enc = sys.getdefaultencoding()
+	enc = 'UTF-8' # Should be OK for Linux and OS X, for testing
 	try:
 		logfilename = sys.argv[1]
-		logfile = open(logfilename, 'r') \
-				.read().decode(enc, 'ignore') \
-				.encode(enc, 'ignore').splitlines()
+		# logfile = open(logfilename, 'r') \
+		# 		.read().decode(enc, 'ignore') \
+		# 		.encode(enc, 'ignore').splitlines()
+		logfile = open(logfilename,'r').read().decode(enc,'ignore').splitlines()
 		(errors,warnings) = parse_tex_log(logfile)
 		print ""
 		print "Errors:"
