@@ -17,6 +17,10 @@ def debug_skip_file(f):
 	if not print_debug:
 		return True
 	debug("debug_skip_file: " + f)
+	# Heuristic: TeXlive on Mac or Linux (well, Ubuntu at least).
+	if ("/usr/local/texlive/" in f) or ("/usr/share/texlive/" in f):
+		print "TeXlive FILE! Don't skip it!"
+		return False
 	# Heuristic: no two consecutive spaces in file name
 	if "  " in f:
 		print "Skip it!"
@@ -57,8 +61,10 @@ def parse_tex_log(log):
  	# + then anything else, captured for recycling
 	# This should take care of e.g. "(./test.tex [12" or "(./test.tex (other.tex"
 	file_rx = re.compile(r"\(\"?(\.?[^\.]+\.[^\s\"\)]+)(\s|\"|\)|$)(.*)")
-	# This is for a corner case: {filename.ext}; capture subsequent text
-	file_toc_rx = re.compile(r"\{\"?\.?[^\.]+\.[^\}]*\"?\}(.*)")
+	# Useless file #1: {filename.ext}; capture subsequent text
+	file_useless1_rx = re.compile(r"\{\"?\.?[^\.]+\.[^\}]*\"?\}(.*)")
+	# Useless file #2: <filename.ext>; capture subsequent text
+	file_useless2_rx = re.compile(r"<\"?\.?[^\.]+\.[^>]*\"?>(.*)")
 	pagenum_begin_rx = re.compile(r"\s*\[\d*(.*)")
 	line_rx = re.compile(r"^l\.(\d+)\s(.*)")		# l.nn <text>
 	warning_rx = re.compile(r"^(.*?) Warning: (.+)") # Warnings, first line
@@ -236,7 +242,7 @@ def parse_tex_log(log):
 		# catch over/underfull
 		# skip everything for now
 		# Over/underfull messages end with [] so look for that
-		if line[0:8] in ["Overfull", "Underfull"]:
+		if line[0:8] == "Overfull" or line[0:9] == "Underfull":
 			if line[-2:]=="[]": # one-line over/underfull message
 				continue
 			ou_processing = True
@@ -245,6 +251,7 @@ def parse_tex_log(log):
 					line = log_iterator.next() # will fail when no more lines
 				except StopIteration:
 					break
+				debug("Over/underfull: skip " + line)
 				line_num += 1
 				if len(line)>0 and line[0:3] == " []":
 					ou_processing = False
@@ -280,13 +287,20 @@ def parse_tex_log(log):
 			debug("Reprocessing " + extra)
 			reprocess_extra = True
 			continue
-		# Weird corner case: {filename.ext} (appears with tocs). We just throw it out
-		file_toc_match = file_toc_rx.match(line)
-		if file_toc_match: 
-			extra = file_toc_match.group(1)
+		# Useless file matches: {filename.ext} or <filename.ext>. We just throw it out
+		file_useless_match = file_useless1_rx.match(line) or file_useless2_rx.match(line)
+		if file_useless_match: 
+			extra = file_useless_match.group(1)
+			debug("Useless file: " + line)
 			debug("Reprocessing " + extra)
 			reprocess_extra = True
 			continue
+		# this seems to happen often: no need to push / pop it
+		if line[:12]=="(pdftex.def)":
+			continue
+		# Now we should have a candidate file. We still have an issue with lines that
+		# look like file names, e.g. "(Font)     blah blah data 2012.10.3" but those will
+		# get killed by the isfile call. Not very efficient, but OK in practice
 		file_match = file_rx.match(line) # search matches everywhere, not just at the beginning of a line
 		if file_match:
 			file_name = file_match.group(1)
