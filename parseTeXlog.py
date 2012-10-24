@@ -9,9 +9,13 @@ def debug(s):
 		print "parseTeXlog: " + s
 
 # If file is not found, ask me if we are debugging
+# Rationale: if we are debugging from the command line, perhaps we are parsing
+# a log file from a user, so apply heuristics and / or ask if the file not
+# found is actually legit
 def debug_skip_file(f):
+	# If we are not debugging, then it's not a file for sure, so skip it
 	if not print_debug:
-		return False
+		return True
 	debug("debug_skip_file: " + f)
 	# Heuristic: no two consecutive spaces in file name
 	if "  " in f:
