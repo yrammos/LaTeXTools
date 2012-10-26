@@ -53,18 +53,21 @@ def parse_tex_log(log):
 	# file_rx = re.compile(r"\(([^)]+)$") # OLD
 	# Structure (+ means captured, - means not captured)
 	# - maybe " (for Windows)
-	# + maybe .
+	# + maybe . NEW: or ../, with repetitions; Windows \ still missing!
 	# + then any char except for .
 	# + then .
 	# + then any char except for whitespace or " or ); at least ONE such char
  	# - then whitespace or " or ), or end of line
  	# + then anything else, captured for recycling
 	# This should take care of e.g. "(./test.tex [12" or "(./test.tex (other.tex"
-	file_rx = re.compile(r"\(\"?(\.?[^\.]+\.[^\s\"\)]+)(\s|\"|\)|$)(.*)")
+	#file_rx = re.compile(r"\(\"?(\.?[^\.]+\.[^\s\"\)]+)(\s|\"|\)|$)(.*)")
+	file_rx = re.compile(r"\(\"?((?:\.|\.\./)*[^\.]+\.[^\s\"\)]+)(\s|\"|\)|$)(.*)")
 	# Useless file #1: {filename.ext}; capture subsequent text
-	file_useless1_rx = re.compile(r"\{\"?\.?[^\.]+\.[^\}]*\"?\}(.*)")
+	#file_useless1_rx = re.compile(r"\{\"?\.?[^\.]+\.[^\}]*\"?\}(.*)")
+	file_useless1_rx = re.compile(r"\{\"?(?:\.|\.\./)*[^\.]+\.[^\}]*\"?\}(.*)")
 	# Useless file #2: <filename.ext>; capture subsequent text
-	file_useless2_rx = re.compile(r"<\"?\.?[^\.]+\.[^>]*\"?>(.*)")
+	#file_useless2_rx = re.compile(r"<\"?\.?[^\.]+\.[^>]*\"?>(.*)")
+	file_useless2_rx = re.compile(r"<\"?(?:\.|\.\./)*[^\.]+\.[^>]*\"?>(.*)")
 	pagenum_begin_rx = re.compile(r"\s*\[\d*(.*)")
 	line_rx = re.compile(r"^l\.(\d+)\s(.*)")		# l.nn <text>
 	warning_rx = re.compile(r"^(.*?) Warning: (.+)") # Warnings, first line
