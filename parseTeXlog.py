@@ -18,9 +18,9 @@ def debug_skip_file(f):
 	if not print_debug:
 		return True
 	debug("debug_skip_file: " + f)
-	# Heuristic: TeXlive on Mac or Linux (well, Ubuntu at least).
-	if ("/usr/local/texlive/" in f) or ("/usr/share/texlive/" in f):
-		print "TeXlive FILE! Don't skip it!"
+	# Heuristic: TeXlive on Mac or Linux (well, Ubuntu at least) or Windows / MiKTeX
+	if ("/usr/local/texlive/" in f) or ("/usr/share/texlive/" in f) or ("Program Files\\MiKTeX" in f):
+		print "TeXlive / MiKTeX FILE! Don't skip it!"
 		return False
 	# Heuristic: no two consecutive spaces in file name
 	if "  " in f:
@@ -118,6 +118,7 @@ def parse_tex_log(log):
 
 	recycle_extra = False		# Should we add extra to newly read line?
 	reprocess_extra = False		# Should we reprocess extra, without reading a new line?
+	emergency_stop = False		# If TeX stopped processing, we can't pop all files
 
 	while True:
 		# first of all, see if we have a line to recycle (see heuristic for "l.<nn>" lines)
@@ -230,6 +231,15 @@ def parse_tex_log(log):
 		# 		line = line_purged
 		# 	else:
 		# 		break
+		# Are we done
+		if "Here is how much of TeX's memory you used:" in line:
+			if len(files)>0 and (not emergency_stop):
+				errors.append("LaTeXTools cannot correctly detect file names in this LOG file.")
+				errors.append("(where: finished processing)")
+				errors.append("Please let me know via GitHub")
+				debug("Done processing, some files left on the stack")
+				files=[]			
+			break
 		# Special error reporting for e.g. \footnote{text NO MATCHING PARENS & co
 		if "! File ended while scanning use of" in line:
 			scanned_command = line[35:-2] # skip space and period at end
@@ -248,6 +258,7 @@ def parse_tex_log(log):
 			continue
 		if "! Emergency stop." in line:
 			state = STATE_SKIP
+			emergency_stop = True
 			continue
 		# catch over/underfull
 		# skip everything for now
