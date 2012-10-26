@@ -3,6 +3,7 @@ import sys
 import os.path
 
 print_debug = False
+extra_file_ext = []
 
 def debug(s):
 	if print_debug:
@@ -26,7 +27,8 @@ def debug_skip_file(f):
 		print "Skip it!"
 		return True
 	# Heuristic: file in local directory with .tex ending
-	if f[0:2] in ['./', '.\\'] and f[-4:].upper() in ['.TEX', '.AUX', '.BBL', '.CLS', '.STY']:
+	file_exts = extra_file_ext + ['tex', 'aux', 'bbl', 'cls', 'sty']
+	if f[0:2] in ['./', '.\\', '..'] and os.path.splitext(f)[1].lower()[1:] in file_exts:
 		print "File! Don't skip it"
 		return False
 	if raw_input() == "":
@@ -53,15 +55,20 @@ def parse_tex_log(log):
 	# file_rx = re.compile(r"\(([^)]+)$") # OLD
 	# Structure (+ means captured, - means not captured)
 	# - maybe " (for Windows)
-	# + maybe . NEW: or ../, with repetitions; Windows \ still missing!
+	# - maybe a drive letter and : (for Windows)
+	# + maybe . NEW: or ../ or ..\, with repetitions
 	# + then any char except for .
 	# + then .
 	# + then any char except for whitespace or " or ); at least ONE such char
  	# - then whitespace or " or ), or end of line
  	# + then anything else, captured for recycling
 	# This should take care of e.g. "(./test.tex [12" or "(./test.tex (other.tex"
+	# NOTES:
+	# 1. we capture the initial and ending " if there is one; we'll need to remove it later
+	# 2. we define the basic filename parsing regex so we can recycle it
 	#file_rx = re.compile(r"\(\"?(\.?[^\.]+\.[^\s\"\)]+)(\s|\"|\)|$)(.*)")
-	file_rx = re.compile(r"\(\"?((?:\.|\.\./)*[^\.]+\.[^\s\"\)]+)(\s|\"|\)|$)(.*)")
+	file_basic = r"\"?(?:[a-zA-Z]\:)?(?:\.|(?:\.\./)*(?:\.\.\\)*)?[^\.]+\.[^\s\"\)]+"
+	file_rx = re.compile(r"\((" + file_basic + r")(\s|\"|\)|$)(.*)")
 	# Useless file #1: {filename.ext}; capture subsequent text
 	#file_useless1_rx = re.compile(r"\{\"?\.?[^\.]+\.[^\}]*\"?\}(.*)")
 	file_useless1_rx = re.compile(r"\{\"?(?:\.|\.\./)*[^\.]+\.[^\}]*\"?\}(.*)")
@@ -307,6 +314,8 @@ def parse_tex_log(log):
 		file_match = file_rx.match(line) # search matches everywhere, not just at the beginning of a line
 		if file_match:
 			file_name = file_match.group(1)
+			# remove quotes if necessary
+			file_name.replace("\"", "")
 			# This kills off stupid matches
 			if (not os.path.isfile(file_name)) and debug_skip_file(file_name):
 				continue
@@ -349,6 +358,8 @@ if __name__ == '__main__':
 		# logfile = open(logfilename, 'r') \
 		# 		.read().decode(enc, 'ignore') \
 		# 		.encode(enc, 'ignore').splitlines()
+		if len(sys.argv) == 3:
+			extra_file_ext = sys.argv[2].split(" ")
 		logfile = open(logfilename,'r').read().decode(enc,'ignore').splitlines()
 		(errors,warnings) = parse_tex_log(logfile)
 		print ""
