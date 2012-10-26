@@ -272,18 +272,20 @@ def parse_tex_log(log):
 				continue
 		line = line.strip() # get rid of initial spaces
 		# note: in the next line, and also when we check for "!", we use the fact that "and" short-circuits
-		while len(line)>0 and line[0]==')': # denotes end of processing of current file: pop it from stack
-			# files.pop()	
+		if len(line)>0 and line[0]==')': # denotes end of processing of current file: pop it from stack
 			if files:
 				debug(" "*len(files) + files[-1] + " (%d)" % (line_num,))
 				files.pop()
+				extra = line[1:]
+				debug("Reprocessing " + extra)
+				reprocess_extra = True
+				continue
 			else:
 				errors.append("LaTeXTools cannot correctly detect file names in this LOG file.")
 				errors.append("Please let me know via GitHub. Thanks!")
 				debug("Popping inexistent files")
 				break
-			line = line[1:] # lather, rinse, repeat
-		line = line.strip() # again, to make sure there is no ") (filename" pattern
+#		line = line.strip() # again, to make sure there is no ") (filename" pattern
 		# Opening page indicators: skip and reprocess
 		pagenum_begin_match = pagenum_begin_rx.match(line)
 		if pagenum_begin_match:
@@ -326,6 +328,7 @@ def parse_tex_log(log):
 			debug(" "*len(files) + files[-1] + " (%d)" % (line_num,))
 			# now we recycle the remainder of this line
 			extra = file_match.group(2) + file_match.group(3)
+			debug("Reprocessing " + extra)
 			reprocess_extra = True
 			continue
 		if len(line)>0 and line[0]=='!': # Now it's surely an error
