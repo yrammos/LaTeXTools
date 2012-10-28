@@ -2,7 +2,7 @@ import re
 import sys
 import os.path
 
-print_debug = False
+print_debug = True
 interactive = False
 extra_file_ext = []
 
@@ -56,13 +56,14 @@ def parse_tex_log(log):
 	# some regexes
 	# file_rx = re.compile(r"\(([^)]+)$") # OLD
 	# Structure (+ means captured, - means not captured)
-	# - maybe " (for Windows)
-	# - maybe a drive letter and : (for Windows)
+	# + maybe " (for Windows)
+	# + maybe a drive letter and : (for Windows)
 	# + maybe . NEW: or ../ or ..\, with repetitions
-	# + then any char except for .
+	# + then any char, matched NON-GREEDILY (avoids issues with multiple files on one line?)
 	# + then .
 	# + then any char except for whitespace or " or ); at least ONE such char
- 	# - then whitespace or " or ), or end of line
+	# + then maybe " (on Windows/MikTeX)
+ 	# - then whitespace or ), or end of line
  	# + then anything else, captured for recycling
 	# This should take care of e.g. "(./test.tex [12" or "(./test.tex (other.tex"
 	# NOTES:
@@ -70,7 +71,7 @@ def parse_tex_log(log):
 	# 2. we define the basic filename parsing regex so we can recycle it
 	#file_rx = re.compile(r"\(\"?(\.?[^\.]+\.[^\s\"\)]+)(\s|\"|\)|$)(.*)")
 	#file_basic = r"\"?(?:[a-zA-Z]\:)?(?:\.|(?:\.\./)*(?:\.\.\\)*)?[^\.]+\.[^\s\"\)]+"
-	file_basic = r"\"?(?:[a-zA-Z]\:)?(?:\.|(?:\.\./)|(?:\.\.\\))*.+\.[^\s\"\)\.]+"
+	file_basic = r"\"?(?:[a-zA-Z]\:)?(?:\.|(?:\.\./)|(?:\.\.\\))*.+?\.[^\s\"\)\.]+\"?"
 	file_rx = re.compile(r"\((" + file_basic + r")(\s|\"|\)|$)(.*)")
 	# Useless file #1: {filename.ext}; capture subsequent text
 	#file_useless1_rx = re.compile(r"\{\"?\.?[^\.]+\.[^\}]*\"?\}(.*)")
