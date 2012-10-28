@@ -3,6 +3,7 @@ import sys
 import os.path
 
 print_debug = False
+interactive = False
 extra_file_ext = []
 
 def debug(s):
@@ -15,7 +16,7 @@ def debug(s):
 # found is actually legit
 def debug_skip_file(f):
 	# If we are not debugging, then it's not a file for sure, so skip it
-	if not print_debug:
+	if not (print_debug and interactive):
 		return True
 	debug("debug_skip_file: " + f)
 	# Heuristic: TeXlive on Mac or Linux (well, Ubuntu at least) or Windows / MiKTeX
@@ -47,7 +48,8 @@ def parse_tex_log(log):
 	debug("Parsing log file")
 	errors = []
 	warnings = []
-	
+
+
 	# loop over all log lines; construct error message as needed
 	# This will be useful for multi-file documents
 
@@ -67,7 +69,8 @@ def parse_tex_log(log):
 	# 1. we capture the initial and ending " if there is one; we'll need to remove it later
 	# 2. we define the basic filename parsing regex so we can recycle it
 	#file_rx = re.compile(r"\(\"?(\.?[^\.]+\.[^\s\"\)]+)(\s|\"|\)|$)(.*)")
-	file_basic = r"\"?(?:[a-zA-Z]\:)?(?:\.|(?:\.\./)*(?:\.\.\\)*)?[^\.]+\.[^\s\"\)]+"
+	#file_basic = r"\"?(?:[a-zA-Z]\:)?(?:\.|(?:\.\./)*(?:\.\.\\)*)?[^\.]+\.[^\s\"\)]+"
+	file_basic = r"\"?(?:[a-zA-Z]\:)?(?:\.|(?:\.\./)|(?:\.\.\\))*.+\.[^\s\"\)\.]+"
 	file_rx = re.compile(r"\((" + file_basic + r")(\s|\"|\)|$)(.*)")
 	# Useless file #1: {filename.ext}; capture subsequent text
 	#file_useless1_rx = re.compile(r"\{\"?\.?[^\.]+\.[^\}]*\"?\}(.*)")
@@ -271,9 +274,10 @@ def parse_tex_log(log):
 				try:
 					line = log_iterator.next() # will fail when no more lines
 				except StopIteration:
+					debug("Over/underfull: StopIteration (%d)" % line_num)
 					break
-				debug("Over/underfull: skip " + line)
 				line_num += 1
+				debug("Over/underfull: skip " + line + " (%d) " % line_num)
 				if len(line)>0 and line[0:3] == " []":
 					ou_processing = False
 			if ou_processing:
@@ -324,17 +328,20 @@ def parse_tex_log(log):
 		# Now we should have a candidate file. We still have an issue with lines that
 		# look like file names, e.g. "(Font)     blah blah data 2012.10.3" but those will
 		# get killed by the isfile call. Not very efficient, but OK in practice
-		file_match = file_rx.match(line) # search matches everywhere, not just at the beginning of a line
+		debug("FILE? Line:" + line)
+		file_match = file_rx.match(line)
 		if file_match:
+			debug("MATCHED")
 			file_name = file_match.group(1)
 			# remove quotes if necessary
-			file_name.replace("\"", "")
+			file_name = file_name.replace("\"", "")
 			# This kills off stupid matches
 			if (not os.path.isfile(file_name)) and debug_skip_file(file_name):
 				continue
 			# # remove quotes NO LONGER NEEDED
 			# if file_name[0] == "\"" and file_name[-1] == "\"":
 			# 	file_name = file_name[1:-1]
+			debug("IT'S A FILE!")
 			files.append(file_name)
 			debug(" "*len(files) + files[-1] + " (%d)" % (line_num,))
 			# now we recycle the remainder of this line
@@ -366,6 +373,7 @@ def parse_tex_log(log):
 
 if __name__ == '__main__':
 	print_debug = True
+	interactive = True
 	enc = 'UTF-8' # Should be OK for Linux and OS X, for testing
 	try:
 		logfilename = sys.argv[1]

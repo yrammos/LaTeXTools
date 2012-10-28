@@ -89,6 +89,9 @@ class CmdThread ( threading.Thread ):
 
 		# this is a conundrum. We used (ST1) to open in binary mode ('rb') to avoid
 		# issues, but maybe we just need to decode?
+		# 12-10-27 NO! We actually do need rb, because MikTeX on Windows injects Ctrl-Z's in the
+		# log file, and this just causes Python to stop reading the file.
+
 		# OK, this seems solid: first we decode using the self.caller.encoding, 
 		# then we reencode using the default locale's encoding.
 		# Note: we get this using ST2's own getdefaultencoding(), not the locale module
@@ -96,12 +99,20 @@ class CmdThread ( threading.Thread ):
 
 		# CHANGED 12/10/19: use platform encoding (self.caller.encoding), then
 		# keep it that way!
-		
-		data = open(self.caller.tex_base + ".log", 'r') \
-				.read().decode(self.caller.encoding, 'ignore').splitlines()
 
-				#  \
-				# .encode(sublime_plugin.sys.getdefaultencoding(), 'ignore').splitlines()
+		# CHANGED 12-10-27. OK, here's the deal. We must open in binary mode on Windows
+		# because silly MiKTeX inserts ASCII control characters in over/underfull warnings.
+		# In particular it inserts EOFs, which stop reading altogether; reading in binary
+		# prevents that. However, that's not the whole story: if a FS character is encountered,
+		# AND if we invoke splitlines on a STRING, it sadly breaks the line in two. This messes up
+		# line numbers in error reports. If, on the other hand, we invoke splitlines on a
+		# byte array (? whatever read() returns), this does not happen---we only break at \n, etc.
+		# However, we must still decode the resulting lines using the relevant encocding.
+		
+		data = open(self.caller.tex_base + ".log", 'rb') \
+				.read().splitlines()
+
+		data = [l.decode(self.caller.encoding, 'ignore') for l in data]
 
 		errors = []
 		warnings = []
