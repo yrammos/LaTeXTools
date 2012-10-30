@@ -8,7 +8,7 @@ extra_file_ext = []
 
 def debug(s):
 	if print_debug:
-		print "parseTeXlog: " + s
+		print "parseTeXlog: " + repr(s)
 
 # If file is not found, ask me if we are debugging
 # Rationale: if we are debugging from the command line, perhaps we are parsing

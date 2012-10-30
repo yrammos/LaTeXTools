@@ -107,7 +107,7 @@ class CmdThread ( threading.Thread ):
 		# AND if we invoke splitlines on a STRING, it sadly breaks the line in two. This messes up
 		# line numbers in error reports. If, on the other hand, we invoke splitlines on a
 		# byte array (? whatever read() returns), this does not happen---we only break at \n, etc.
-		# However, we must still decode the resulting lines using the relevant encocding.
+		# However, we must still decode the resulting lines using the relevant encoding.
 		
 		data = open(self.caller.tex_base + ".log", 'rb') \
 				.read().splitlines()
