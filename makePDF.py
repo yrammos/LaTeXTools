@@ -108,11 +108,9 @@ class CmdThread ( threading.Thread ):
 		# line numbers in error reports. If, on the other hand, we invoke splitlines on a
 		# byte array (? whatever read() returns), this does not happen---we only break at \n, etc.
 		# However, we must still decode the resulting lines using the relevant encoding.
+		# 121101 -- moved splitting and decoding logic to parseTeXlog, where it belongs.
 		
-		data = open(self.caller.tex_base + ".log", 'rb') \
-				.read().splitlines()
-
-		data = [l.decode(self.caller.encoding, 'ignore') for l in data]
+		data = open(self.caller.tex_base + ".log", 'rb').read()		
 
 		errors = []
 		warnings = []

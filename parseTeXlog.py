@@ -41,14 +41,29 @@ def debug_skip_file(f):
 
 
 # Log parsing, TNG :-)
-# Input: tex log file (decoded), split into lines
+# Input: tex log file, read in **binary** form, unprocessed
 # Output: content to be displayed in output panel, split into lines
 
-def parse_tex_log(log):
+def parse_tex_log(data):
 	debug("Parsing log file")
 	errors = []
 	warnings = []
 
+	guessed_encoding = 'UTF-8' # for now
+
+	# Split data into lines while in binary form
+	# Then decode using guessed encoding
+	# We need the # of bytes per line, not the # of chars (codepoints), to undo TeX's line breaking
+	# so we construct an array of tuples:
+	#   (decoded line, length of original byte array)
+
+	try:
+		log = [(l.decode(guessed_encoding, 'ignore'), len(l))  for l in data.splitlines()]
+	except UnicodeError:
+		debug("log file not in UTF-8 encoding!")
+		errors.append("ERROR: your log file is not in UTF-8 encoding.")
+		errors.append("Sorry, I can't process this file")
+		return (errors, warnings)
 
 	# loop over all log lines; construct error message as needed
 	# This will be useful for multi-file documents
@@ -119,6 +134,7 @@ def parse_tex_log(log):
 	log_iterator = log.__iter__()
 	line_num=0
 	line = ""
+	linelen = 0
 
 	recycle_extra = False		# Should we add extra to newly read line?
 	reprocess_extra = False		# Should we reprocess extra, without reading a new line?
@@ -127,7 +143,7 @@ def parse_tex_log(log):
 	while True:
 		# first of all, see if we have a line to recycle (see heuristic for "l.<nn>" lines)
 		if recycle_extra:
-			line = extra
+			line, linelen = extra, extralen
 			recycle_extra = False
 			line_num +=1
 		elif reprocess_extra:
@@ -136,7 +152,7 @@ def parse_tex_log(log):
 			# save previous line for "! File ended while scanning use of..." message
 			prev_line = line
 			try:
-				line = log_iterator.next() # will fail when no more lines
+				line, linelen = log_iterator.next() # will fail when no more lines
 				line_num += 1
 			except StopIteration:
 				break
@@ -150,19 +166,19 @@ def parse_tex_log(log):
 		# HEURISTIC: the first line is always long, and we don't care about it
 		# also, the **<file name> line may be long, but we skip it, too (to avoid edge cases)
 		# We make sure we are NOT reprocessing a line!!!
-		if (not reprocess_extra) and line_num>1 and len(line)>=79 and line[0:2] != "**": 
+		if (not reprocess_extra) and line_num>1 and linelen>=79 and line[0:2] != "**": 
 			# print "Line %d is %d characters long; last char is %s" % (line_num, len(line), line[-1])
 			# HEURISTICS HERE
 			extend_line = True
 			recycle_extra = False
 			while extend_line:
 				try:
-					extra = log_iterator.next()
+					extra, extralen = log_iterator.next()
 					line_num += 1 # for debugging purposes
 					# HEURISTIC: if extra line begins with "Package:" "File:" "Document Class:",
 					# or other "well-known markers",
 					# we just had a long file name, so do not add
-					if len(extra)>0 and \
+					if extralen>0 and \
 					   (extra[0:5]=="File:" or extra[0:8]=="Package:" or extra[0:15]=="Document Class:") or \
 					   (extra[0:9]=="LaTeX2e <") or assignment_rx.match(extra):
 						extend_line = False
@@ -176,7 +192,8 @@ def parse_tex_log(log):
 						recycle_extra = True # make sure we process the "l.<nn>" line!
 					else:
 						line += extra
-						if len(extra) < 79:
+						linelen += extralen
+						if extralen < 79:
 							extend_line = False
 				except StopIteration:
 					extend_line = False # end of file, so we must be done. This shouldn't happen, btw
@@ -189,6 +206,11 @@ def parse_tex_log(log):
 		if state==STATE_REPORT_ERROR:
 			# skip everything except "l.<nn> <text>"
 			debug(line)
+			# We check for emergency stops here, too, because it may occur before the l.nn text
+			if "! Emergency stop." in line:
+				emergency_stop = True
+				debug("Emergency stop found")
+				continue
 			err_match = line_rx.match(line)
 			if not err_match:
 				continue
@@ -203,7 +225,8 @@ def parse_tex_log(log):
 				errors.append("(where: trying to display error message)")
 				errors.append("Please let me know via GitHub. Thanks!")
 			else:
-				location = files[-1]		
+				location = files[-1]
+			debug("Found error: " + err_msg)		
 			errors.append(location + ":" + err_line + ": " + err_msg + " [" + err_text + "]")
 			continue
 		if state==STATE_REPORT_WARNING:
@@ -237,20 +260,24 @@ def parse_tex_log(log):
 		# 		break
 		# Are we done
 		if "Here is how much of TeX's memory you used:" in line:
-			if len(files)>0 and (not emergency_stop):
-				errors.append("LaTeXTools cannot correctly detect file names in this LOG file.")
-				errors.append("(where: finished processing)")
-				errors.append("Please let me know via GitHub")
-				debug("Done processing, some files left on the stack")
+			if len(files)>0:
+				if emergency_stop:
+					debug("Done processing, files on stack due to emergency stop (all is fine!).")
+				else:
+					errors.append("LaTeXTools cannot correctly detect file names in this LOG file.")
+					errors.append("(where: finished processing)")
+					errors.append("Please let me know via GitHub")
+					debug("Done processing, some files left on the stack")
 				files=[]			
 			break
 		# Special error reporting for e.g. \footnote{text NO MATCHING PARENS & co
 		if "! File ended while scanning use of" in line:
 			scanned_command = line[35:-2] # skip space and period at end
 			# we may be unable to report a file by popping it, so HACK HACK HACK
-			file_name = log_iterator.next() # <inserted text>
-			file_name = log_iterator.next() #      \par
-			file_name = log_iterator.next()[3:] # here is the file name with <*> in front
+			file_name, linelen = log_iterator.next() # <inserted text>
+			file_name, linelen = log_iterator.next() #      \par
+			file_name, linelen = log_iterator.next()
+			file_name = file_name[3:] # here is the file name with <*> in front
 			errors.append("TeX STOPPED: " + line[2:-2]+prev_line[:-5])
 			errors.append("TeX reports the error was in file:" + file_name)
 			continue
@@ -263,6 +290,7 @@ def parse_tex_log(log):
 		if "! Emergency stop." in line:
 			state = STATE_SKIP
 			emergency_stop = True
+			debug("Emergency stop found")
 			continue
 		# catch over/underfull
 		# skip everything for now
@@ -273,7 +301,7 @@ def parse_tex_log(log):
 			ou_processing = True
 			while ou_processing:
 				try:
-					line = log_iterator.next() # will fail when no more lines
+					line, linelen = log_iterator.next() # will fail when no more lines
 				except StopIteration:
 					debug("Over/underfull: StopIteration (%d)" % line_num)
 					break
@@ -375,7 +403,6 @@ def parse_tex_log(log):
 if __name__ == '__main__':
 	print_debug = True
 	interactive = True
-	enc = 'UTF-8' # Should be OK for Linux and OS X, for testing
 	try:
 		logfilename = sys.argv[1]
 		# logfile = open(logfilename, 'r') \
@@ -383,8 +410,8 @@ if __name__ == '__main__':
 		# 		.encode(enc, 'ignore').splitlines()
 		if len(sys.argv) == 3:
 			extra_file_ext = sys.argv[2].split(" ")
-		logfile = open(logfilename,'r').read().decode(enc,'ignore').splitlines()
-		(errors,warnings) = parse_tex_log(logfile)
+		data = open(logfilename,'r').read()
+		(errors,warnings) = parse_tex_log(data)
 		print ""
 		print "Errors:"
 		for err in errors:
