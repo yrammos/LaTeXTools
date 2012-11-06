@@ -2,14 +2,16 @@ import re
 import sys
 import os.path
 
-print_debug = True
+print_debug = False
 interactive = False
 extra_file_ext = []
 
 def debug(s):
 	if print_debug:
-		print "parseTeXlog: " + s.encode('UTF-8') # repr(s)
+		print "parseTeXlog: " + s.encode('UTF-8') # I think the ST2 console wants this
 
+# The following function is only used when debugging interactively.
+#
 # If file is not found, ask me if we are debugging
 # Rationale: if we are debugging from the command line, perhaps we are parsing
 # a log file from a user, so apply heuristics and / or ask if the file not
@@ -40,7 +42,7 @@ def debug_skip_file(f):
 		return False
 
 
-# Log parsing, TNG :-)
+# More robust parsing code: October / November 2012
 # Input: tex log file, read in **binary** form, unprocessed
 # Output: content to be displayed in output panel, split into lines
 
@@ -239,26 +241,8 @@ def parse_tex_log(data):
 			continue
 		if line=="":
 			continue
-		# Remove matched parentheses: they do not add new files to the stack
-		# Do this iteratatively; for instance, on Windows 64, miktex has some files in
-		# "Program Files (x86)", which wreaks havoc
-		# NOTE: this means that your file names CANNOT have parentheses!!!
-		#
-		# NEW: need to rethink this because the new regex deals with (x86) and OTOH this may be bad...
-		# REMOVE IT, but add check in file matching for files ending in ")" - so if files are processed immediately,
-		# we pop them right away.
-		#
-		# while True:
-		# 	line_purged = matched_parens_rx.sub("", line)
-		# 	# if line != line_purged:
-		# 		# print "Purged parens on line %d:" % (line_num, )  
-		# 		# print line
-		# 		# print line_purged
-		# 	if line != line_purged:
-		# 		line = line_purged
-		# 	else:
-		# 		break
-		# Are we done
+
+		# Are we done?
 		if "Here is how much of TeX's memory you used:" in line:
 			if len(files)>0:
 				if emergency_stop:
@@ -270,6 +254,7 @@ def parse_tex_log(data):
 					debug("Done processing, some files left on the stack")
 				files=[]			
 			break
+
 		# Special error reporting for e.g. \footnote{text NO MATCHING PARENS & co
 		if "! File ended while scanning use of" in line:
 			scanned_command = line[35:-2] # skip space and period at end
@@ -281,6 +266,7 @@ def parse_tex_log(data):
 			errors.append("TeX STOPPED: " + line[2:-2]+prev_line[:-5])
 			errors.append("TeX reports the error was in file:" + file_name)
 			continue
+
 		# Here, make sure there was no uncaught error, in which case we do more special processing
 		if "!  ==> Fatal error occurred, no output" in line:
 			if errors == []:
@@ -292,6 +278,7 @@ def parse_tex_log(data):
 			emergency_stop = True
 			debug("Emergency stop found")
 			continue
+
 		# catch over/underfull
 		# skip everything for now
 		# Over/underfull messages end with [] so look for that
@@ -314,6 +301,7 @@ def parse_tex_log(data):
 				break
 			else:
 				continue
+
 		line = line.strip() # get rid of initial spaces
 		# note: in the next line, and also when we check for "!", we use the fact that "and" short-circuits
 		if len(line)>0 and line[0]==')': # denotes end of processing of current file: pop it from stack
@@ -329,7 +317,7 @@ def parse_tex_log(data):
 				errors.append("Please let me know via GitHub. Thanks!")
 				debug("Popping inexistent files")
 				break
-#		line = line.strip() # again, to make sure there is no ") (filename" pattern
+
 		# Opening page indicators: skip and reprocess
 		pagenum_begin_match = pagenum_begin_rx.match(line)
 		if pagenum_begin_match:
@@ -337,12 +325,14 @@ def parse_tex_log(data):
 			debug("Reprocessing " + extra)
 			reprocess_extra = True
 			continue
+
 		# Closing page indicators: skip and reprocess
 		if len(line)>0 and line[0]==']':
 			extra = line[1:]
 			debug("Reprocessing " + extra)
 			reprocess_extra = True
 			continue
+
 		# Useless file matches: {filename.ext} or <filename.ext>. We just throw it out
 		file_useless_match = file_useless1_rx.match(line) or file_useless2_rx.match(line)
 		if file_useless_match: 
@@ -351,9 +341,11 @@ def parse_tex_log(data):
 			debug("Reprocessing " + extra)
 			reprocess_extra = True
 			continue
+
 		# this seems to happen often: no need to push / pop it
 		if line[:12]=="(pdftex.def)":
 			continue
+
 		# Now we should have a candidate file. We still have an issue with lines that
 		# look like file names, e.g. "(Font)     blah blah data 2012.10.3" but those will
 		# get killed by the isfile call. Not very efficient, but OK in practice
@@ -367,9 +359,6 @@ def parse_tex_log(data):
 			# This kills off stupid matches
 			if (not os.path.isfile(file_name)) and debug_skip_file(file_name):
 				continue
-			# # remove quotes NO LONGER NEEDED
-			# if file_name[0] == "\"" and file_name[-1] == "\"":
-			# 	file_name = file_name[1:-1]
 			debug("IT'S A FILE!")
 			files.append(file_name)
 			debug(" "*len(files) + files[-1] + " (%d)" % (line_num,))
@@ -378,12 +367,14 @@ def parse_tex_log(data):
 			debug("Reprocessing " + extra)
 			reprocess_extra = True
 			continue
+
 		if len(line)>0 and line[0]=='!': # Now it's surely an error
 			debug(line)
 			err_msg = line[2:] # skip "! "
 			# next time around, err_msg will be set and we'll extract all info
 			state = STATE_REPORT_ERROR
 			continue
+
 		warning_match = warning_rx.match(line)
 		if warning_match:
 			# if last character is a dot, it's a single line

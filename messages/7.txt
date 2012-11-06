@@ -1,8 +1,9 @@
-LaTeXTools Plugin version 2012-10-14 changelog:
+LaTeXTools Plugin version 2012-11-05 changelog:
 
 New features:
 
-- 
+- Merged the new log parsing code; it should hopefully be much more robust, but let me know if you have
+  any problems / crashes / hangs when compiling.
 
 
 Bugs fixed:
@@ -12,4 +13,8 @@ Bugs fixed:
 
 - Robustified makePDF.py; now it should always fail gracefully when it cannot parse tex file names,
   and kindly ask the user to report the bug on GitHub :-) Note TODO: better filename regexp!
+
+- Robustified support for MikTeX. I would say that right now both MiKTeX and TeXLive are equally
+  well-supported on Windows.
+
 

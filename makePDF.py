@@ -44,7 +44,7 @@ class CmdThread ( threading.Thread ):
 		cmd = self.caller.make_cmd + [self.caller.file_name]
 		self.caller.output("[Compiling " + self.caller.file_name + "]")
 		if DEBUG:
-			print cmd
+			print cmd.encode('UTF-8')
 
 		# Handle path; copied from exec.py
 		if self.caller.path:
@@ -53,13 +53,20 @@ class CmdThread ( threading.Thread ):
 			# or tuck it at the front: "$PATH;C:\\new\\path", "C:\\new\\path;$PATH"
 			os.environ["PATH"] = os.path.expandvars(self.caller.path).encode(sys.getfilesystemencoding())
 
-		if platform.system() == "Windows":
-			# make sure console does not come up
-			startupinfo = subprocess.STARTUPINFO()
-			startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-			proc = subprocess.Popen(cmd, startupinfo=startupinfo)
-		else:
-			proc = subprocess.Popen(cmd)
+		try:
+			if platform.system() == "Windows":
+				# make sure console does not come up
+				startupinfo = subprocess.STARTUPINFO()
+				startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+				proc = subprocess.Popen(cmd, startupinfo=startupinfo)
+			else:
+				proc = subprocess.Popen(cmd)
+		except:
+			self.caller.output("\n\nCOULD NOT COMPILE!\n\n")
+			self.caller.output("Attempted command:")
+			self.caller.output(" ".join(cmd))
+			self.caller.proc = None
+			return
 		
 		# restore path if needed
 		if self.caller.path:
@@ -175,10 +182,11 @@ class make_pdfCommand(sublime_plugin.WindowCommand):
 		view = self.window.active_view()
 
 		self.file_name = getTeXRoot.get_tex_root(view)
+		if not os.path.isfile(self.file_name):
+			sublime.error_message(self.file_name + ": file not found.")
+			return
 
-		# self.file_name = view.file_name()
 		self.tex_base, self.tex_ext = os.path.splitext(self.file_name)
-		# On OSX, change to file directory, or latexmk will spew stuff into root!
 		tex_dir = os.path.dirname(self.file_name)
 		
 		# Extra paths
