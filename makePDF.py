@@ -344,12 +344,18 @@ class CmdThread(threading.Thread):
 		# then we reencode using the default locale's encoding.
 		# Note: we get this using ST2's own getdefaultencoding(), not the locale module
 		# We ignore bad chars in both cases.
-		data = open(self.caller.tex_base + ".log", 'r') \
+		content = ["", ""]
+		try:
+			data = open(self.caller.tex_base + ".log", 'r') \
 				.read().decode(self.caller.encoding, 'ignore') \
 				.encode(sublime_plugin.sys.getdefaultencoding(), 'ignore').splitlines()
+		except:
+			content.append("lilypond-book error before first LaTeX log production. Check your lilypond-book log.")
+			self.caller.output(content)
+			self.caller.output("\n\n[Failed...]\n")
+			return
 
 		(errors, warnings) = parseTeXlog(data)
-		content = ["", ""]
 		if errors:
 			content.append("There were errors in your LaTeX source")
 			content.append("")
