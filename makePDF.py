@@ -276,17 +276,18 @@ class CmdThread(threading.Thread):
 		# TeX Root filename has .tex extension: lilypond-book not to be invoked
 		if self.caller.split_file_name[1].upper() in ('.TEX'):
 			cmd = ["tmux", "send-keys", "-t", "mainmux:2.1",
-				"cd " + self.caller.file_path + "\x3B " + "latexmk -e '$pdflatex=q/xelatex %O -interaction=errorstopmode -file-line-error -synctex=1 %S/' -f- -pdf " + self.caller.file_name, "C-m"];
+				"cd " + self.caller.file_path + " && echo ok > .lytexerr.log && " + "latexmk -e '$pdflatex=q/xelatex %O -interaction=errorstopmode -file-line-error -synctex=1 %S/' -f- -pdf " + self.caller.file_name, "C-m"];
 			self.caller.output("[Compiling " + self.caller.file_name + "]")
 			if DEBUG:
 				print cmd
 		# TeX Root filename has .lytex extension: lilypond-book to be invoked
 		else:
 			cmd = ["tmux", "send-keys", "-t", "mainmux:2.1",
-				"cd " + self.caller.file_path + "\x3B " + "lilypond-book -f latex --pdf " + self.caller.file_name + "\x3B " + " latexmk -e '$pdflatex=q/xelatex %O -interaction=errorstopmode -file-line-error -synctex=1 %S/' -f- -pdf " + self.caller.split_file_name[0], "C-m"];
+				"cd " + self.caller.file_path + " && echo lil > .lytexerr.log && " + "lilypond-book -f latex --pdf " + self.caller.file_name + " && echo lat > .lytexerr.log && " + "latexmk -e '$pdflatex=q/xelatex %O -interaction=errorstopmode -file-line-error -synctex=1 %S/' -f- -pdf " + self.caller.split_file_name[0] + " && echo ok > .lytexerr.log", "C-m"];
 			self.caller.output("[Compiling " + self.caller.file_name + "]")
 			if DEBUG:
 				print cmd
+
 		# Handle path; copied from exec.py
 		if self.caller.path:
 			old_path = os.environ["PATH"]
@@ -338,19 +339,38 @@ class CmdThread(threading.Thread):
 		print "Finished normally"
 		print proc.returncode
 
+		# Now, first check for a lilypond-book failure. The cmd stores its exit code in a .lytexerr.log file.
+		# Case lil: lilypond error
+		# Case lat: LaTeX error
+		# Case ok:  No error
+		content = ["", ""]
+		try:
+			lilyerr = open(".lytexerr.log", 'r').read()
+			print "command line error code (lil/lat/ok) =", lilyerr
+		except:
+			content.append("The error-checking subsystem of LyTeXTools is malfunctioning. This is not a fatal but bear in mind that you will not be informed of any possible lilypond-book errors.")
+
+		# If lilypond-book exited with a non-zero error code, terminate the build.
+		if (lilyerr == "lil\n"):
+			content.append("lilypond-book produced an error. Also, as a result, LaTeX did not run at all. Check your lilypond-book log.")
+			self.caller.output(content)
+			self.caller.output("\n\n[Failed...]\n")
+			return
+
+		# Now we can be sure that in the worst case we only have LaTeX errors.	
+
 		# this is a conundrum. We used (ST1) to open in binary mode ('rb') to avoid
 		# issues, but maybe we just need to decode?
 		# OK, this seems solid: first we decode using the self.caller.encoding,
 		# then we reencode using the default locale's encoding.
 		# Note: we get this using ST2's own getdefaultencoding(), not the locale module
 		# We ignore bad chars in both cases.
-		content = ["", ""]
 		try:
 			data = open(self.caller.tex_base + ".log", 'r') \
-				.read().decode(self.caller.encoding, 'ignore') \
-				.encode(sublime_plugin.sys.getdefaultencoding(), 'ignore').splitlines()
+			.read().decode(self.caller.encoding, 'ignore') \
+			.encode(sublime_plugin.sys.getdefaultencoding(), 'ignore').splitlines()
 		except:
-			content.append("lilypond-book error before first LaTeX log production. Check your lilypond-book log.")
+			content.append("Critical error: Cannot find LaTeX log.")
 			self.caller.output(content)
 			self.caller.output("\n\n[Failed...]\n")
 			return
@@ -361,7 +381,7 @@ class CmdThread(threading.Thread):
 			content.append("")
 			content.extend(errors)
 		else:
-			content.append("Texification succeeded: no errors!")
+			content.append("Texification succeeded: no LaTeX errors!")
 			content.append("")
 		if warnings:
 			if errors:
