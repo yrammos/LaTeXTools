@@ -1,4 +1,4 @@
-import sublime, sublime_plugin, re, os
+import sublime, sublime_plugin, re, os, jump_aux
 
 # Addendum adding LilyPond-book support to the LaTeXTools package for Sublime Text 2 by msiniscalchi.
 # Please report bugs related to this addendum to Yannis Rammos (yannis.rammos [at] me.com)
@@ -18,41 +18,6 @@ import sublime, sublime_plugin, re, os
 
 
 class jump_from_pdfCommand(sublime_plugin.WindowCommand):
-	# The following delimiters (and one regex) are hard-coded as they cover all cases
-	# I've encountered so far. If more cases crop up, they may warrant a user setting
-	# via some preference file.
-	re_lytex_opening = re.compile(r"\\begin(\[[A-Za-z0-9=., ]*\])?{lilypond}", re.IGNORECASE)
-	lytex_opening_markers = ["\\begin{lilypond}"]
-	lytex_closing_markers = ["\\end{lilypond}" + '\n']
-	tex_opening_markers = ["{%" + '\n', "\\begin{quote}" + '\n']
-	tex_closing_markers = ["}" + '\n', "\\end{quote}" + '\n']
-	lily_packages = ["\\usepackage{graphics}" + '\n']
-
-	# Remove whitespace characters, but not newlines, from string s. Convert s to lowercase.
-	# Used to used to normalize .lytex and .tex files prior to scanning for Lilypond scopes.
-	def filter_line(self, s):
-		s = s.replace(' ', '')
-		s = s.replace('\t', '')
-		s = s.replace('\r', '').lower()
-		return s
-
-	# Look for the next occurence of at least one among "strings" in file "target" and
-	# assume that the current index of the file is at line "startpos".
-	# Return the line number of that next occurence and the index of the matched delimiter (if applicable).
-	def line_of_next_occurrence(self, target, startpos, strings):
-		r = target.readline()
-		r = self.filter_line(r)
-		counter = startpos + 1          # print "           scanning line: ", counter, ":  ", repr(r)
-		while r:
-			if r in strings:
-				return counter, strings.index(r)
-			if (self.re_lytex_opening.match(r)):
-				return counter, 0
-			r = target.readline()
-			r = self.filter_line(r)
-			counter = counter + 1       # print "           scanning line: ", counter, ":  ", repr(r)
-		return counter, 0
-
 	def map_tex2lytex(self, old_line, fileName):
 		# Ensure that both files (.tex and .lytex) are open.
 		tex = open(fileName + '.tex')
@@ -68,13 +33,13 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 
 		# Find the opening and closing line numbers of the next LilyPond hunk in the .tex and .lytex files.
 		while i < old_line:
-			i, r = self.line_of_next_occurrence(tex, ii, self.tex_opening_markers)
-			print "i = ", i, 'r = ', r, 'closing marker = ', self.tex_closing_markers[r].split(' ')
-			ii, r = self.line_of_next_occurrence(tex, i, self.tex_closing_markers[r].split(' '))
+			i, r = jump_aux.line_of_next_occurrence(tex, ii, jump_aux.tex_opening_markers)
+			print "i = ", i, 'r = ', r, 'closing marker = ', jump_aux.tex_closing_markers[r].split(' ')
+			ii, r = jump_aux.line_of_next_occurrence(tex, i, jump_aux.tex_closing_markers[r].split(' '))
 			print "ii = ", ii
-			j, r = self.line_of_next_occurrence(lytex, jj, self.lytex_opening_markers)
+			j, r = jump_aux.line_of_next_occurrence(lytex, jj, jump_aux.lytex_opening_markers)
 			print "j = ", j
-			jj, r = self.line_of_next_occurrence(lytex, j, self.lytex_closing_markers[r].split(' '))
+			jj, r = jump_aux.line_of_next_occurrence(lytex, j, jump_aux.lytex_closing_markers[r].split(' '))
 			print "jj = ", jj
 			cur_sigma = cur_sigma + (ii - i - (jj - j))
 			print "cur_sigma = ", cur_sigma
@@ -89,7 +54,7 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 
 		# Find line where Lilypond has injected \usepackage{graphics} into the .tex file.
 		tex.seek(0)
-		g = self.line_of_next_occurrence(tex, g, self.lily_packages)
+		g = jump_aux.line_of_next_occurrence(tex, g, jump_aux.lily_packages)
 
 		# Inefficient but readable way to obtain the line count of the .tex file.
 		tex.seek(0)
