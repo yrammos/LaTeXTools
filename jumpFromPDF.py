@@ -1,6 +1,6 @@
 import sublime, sublime_plugin, re, os, jump_aux
 
-# Addendum adding LilyPond-book support to the LaTeXTools package for Sublime Text 2 by msiniscalchi.
+# Addendum for LilyPond-book support in the LaTeXTools package for Sublime Text 2 by msiniscalchi.
 # Please report bugs related to this addendum to Yannis Rammos (yannis.rammos [at] me.com)
 # or github.com/yrammos.
 #
@@ -33,24 +33,24 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 
 		# Find the opening and closing line numbers of the next LilyPond hunk in the .tex and .lytex files.
 		while i < old_line:
-			i, r = jump_aux.line_of_next_occurrence(tex, ii, jump_aux.tex_opening_markers)
-			print "i = ", i, 'r = ', r, 'closing marker = ', jump_aux.tex_closing_markers[r].split(' ')
-			ii, r = jump_aux.line_of_next_occurrence(tex, i, jump_aux.tex_closing_markers[r].split(' '))
-			print "ii = ", ii
-			j, r = jump_aux.line_of_next_occurrence(lytex, jj, jump_aux.lytex_opening_markers)
-			print "j = ", j
-			jj, r = jump_aux.line_of_next_occurrence(lytex, j, jump_aux.lytex_closing_markers[r].split(' '))
-			print "jj = ", jj
+			i, r = jump_aux.line_of_next_occurrence(tex, ii, jump_aux.lytex_scope_open)
+			# print "i = ", i
+			ii, r = jump_aux.line_of_next_occurrence(tex, i, jump_aux.lytex_scope_close)
+			# print "ii = ", ii
+			j, r = jump_aux.line_of_next_occurrence(lytex, jj, jump_aux.lytex_scope_open)
+			# print "j = ", j
+			jj, r = jump_aux.line_of_next_occurrence(lytex, j, jump_aux.lytex_scope_close)
+			# print "jj = ", jj
 			cur_sigma = cur_sigma + (ii - i - (jj - j))
-			print "cur_sigma = ", cur_sigma
+			# print "cur_sigma = ", cur_sigma
 
 		# The previous loop has stopped at the Lilypond hunk immediately following the cursor. Revoke the last iteration to account only for hunks before the cursor.
 		cur_sigma = cur_sigma - (ii - i - (jj - j))
-		print "cur_sigma (adjusted) = ", cur_sigma
+		# print "cur_sigma (adjusted) = ", cur_sigma
 
 		# Preliminarily calculate at which line the old_line of the .texly maps into the .tex.
 		mapping = old_line - cur_sigma
-		print "Old line:", old_line, "New line:", mapping
+		# print "Before preamble adjustment: Old line:", old_line, "New line:", mapping
 
 		# Find line where Lilypond has injected \usepackage{graphics} into the .tex file.
 		tex.seek(0)
@@ -59,12 +59,18 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 		# Inefficient but readable way to obtain the line count of the .tex file.
 		tex.seek(0)
 		l = len(tex.readlines())
+		print "l, g = ", l, g
 
 		# Add -1 to the preliminary mapping if the \usepackage{graphics} line of the .tex file is located before the mapping.
-		# This last calculation finally yields the exact mapping.
+		# This last calculation finally yields the exact mapping. It seems that SyncTeX, like SublimeText, is
+		# counting lines starting from 1, so no translation is necessary.
 		if (g[0] < l and old_line > g[0]):
-			return mapping - 1
+			mapping = mapping - 1
+			# print "Adjustment due. Mapping = ", mapping
+			return mapping
 		else:
+			mapping = mapping
+			# print "Adjustment not due. Mapping = ", mapping
 			return mapping
 
 	def run(self):
@@ -98,10 +104,10 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 		# Attempt to open the eponymous .lytex file. If it is unavailable, simply open the .tex file itself.
 		self.tex_filename, self.tex_extension = os.path.splitext(self.tex_filename)
 		if os.path.isfile(self.tex_filename + '.lytex'):
-			print self.tex_filename + '.lytex', "found. Opening right now."
 			# Map the .tex line number onto the .lytex file.
 			self.tex_line = self.map_tex2lytex(self.tex_line, self.tex_filename)
-			self.window.open_file(self.tex_filename + '.lytex:' + str(self.tex_line + 1), sublime.ENCODED_POSITION)
+			print self.tex_filename + '.lytex', "found. Opening right now at line", str(self.tex_line)
+			self.window.open_file(self.tex_filename + '.lytex:' + str(self.tex_line), sublime.ENCODED_POSITION)
 		else:
 			print "There is no", self.tex_filename + '.lytex file.\n', 'Opening line', str(self.tex_line), 'of .tex file instead.'
-			self.window.open_file(self.tex_filename + '.tex:' + str(self.tex_line + 1), sublime.ENCODED_POSITION)
+			self.window.open_file(self.tex_filename + '.tex:' + str(self.tex_line), sublime.ENCODED_POSITION)

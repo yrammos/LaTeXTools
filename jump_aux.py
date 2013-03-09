@@ -1,20 +1,17 @@
-# Addendum adding LilyPond-book support to the LaTeXTools package for Sublime Text 2 by msiniscalchi.
+# Addendum for LilyPond-book support in the LaTeXTools package for Sublime Text 2 by msiniscalchi.
 # Please report bugs related to this addendum to Yannis Rammos (yannis.rammos [at] me.com)
 # or github.com/yrammos.
 #
 # This module, jump_aux.py, provides constants and auxiliary functions for use with the SyncTeX implementation in LyTeXTools.
 
-import re
-
 # The following delimiters (and one regex) are hard-coded as they cover all cases
 # I've encountered so far. If more cases crop up, they may warrant a user setting
 # via some preference file.
 
-lytex_opening_markers = ["\\begin{lilypond}"]
-lytex_closing_markers = ["\\end{lilypond}" + '\n']
-tex_opening_markers = ["{%" + '\n', "\\begin{quote}" + '\n']
-tex_closing_markers = ["}" + '\n', "\\end{quote}" + '\n']
-lily_packages = ["\\usepackage{graphics}" + '\n']
+lytex_scope_open = ["%\\openlytex\n"]
+lytex_scope_close = ["%\\closelytex\n"]
+lily_packages = ["\\usepackage{graphics}\n"]
+
 
 # Look for the next occurence of at least one among "strings" in file "target" and
 # assume that the current index of the file is at line "startpos".
@@ -28,16 +25,17 @@ def line_of_next_occurrence(target, startpos, strings):
 		s = s.replace('\r', '').lower()
 		return s
 
-	re_lytex_opening = re.compile(r"\\begin(\[[A-Za-z0-9=., ]*\])?{lilypond}", re.IGNORECASE)
+	# print "Seeking: ", strings
+	# re_lytex_opening = re.compile(r"\\begin(\[[A-Za-z0-9=., ]*\])?{lilypond}", re.IGNORECASE)
 	r = target.readline()
 	r = filter_line(r)
-	counter = startpos + 1          # print "           scanning line: ", counter, ":  ", repr(r)
+	counter = startpos + 1
+	# print "           scanning line: ", counter, ":  ", repr(r)
 	while r:
 		if r in strings:
 			return counter, strings.index(r)
-		if (re_lytex_opening.match(r)):
-			return counter, 0
 		r = target.readline()
 		r = filter_line(r)
-		counter = counter + 1       # print "           scanning line: ", counter, ":  ", repr(r)
+		counter = counter + 1
+		# print "           scanning line: ", counter, ":  ", repr(r)
 	return counter, 0
