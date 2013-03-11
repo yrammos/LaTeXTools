@@ -1,0 +1,11 @@
+<snippet>
+<description>Wrap selection in LyTeXTools delimiters</description>
+<content><![CDATA[
+% \\openlytex	
+$1:$SELECTION
+% \\closelytex
+]]></content>
+<scope>text.tex.latex</scope>
+<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+<!-- <tabTrigger>hello</tabTrigger> -->
+</snippet>

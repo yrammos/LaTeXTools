@@ -3,6 +3,8 @@
 
         "completions":
         [
-                { "trigger": "lilypond", "contents": "% \\openlytex\n\\lilypond{${1:Type your music in here}} % \\closelytex\n" }
+                { "trigger": "lilypond", "contents": "% \\openlytex\n\\lilypond[${1:Add any options here}]{${2:Type your music in here}} % \\closelytex\n" },
+                { "trigger": "openlytex", "contents": "% \\openlytex" },
+                { "trigger": "closelytex", "contents": "% \\closelytex" }
         ]
 }
