@@ -1,0 +1,11 @@
+<snippet>
+<content><![CDATA[
+% \openlytex
+\lilypondfile[${1:Add any options here}]{${2:filename.ly}}
+% \closelytex
+]]>
+</content>
+<scope>text.tex.latex</scope>
+<tabTrigger>lilypondfile</tabTrigger>
+<description>\lilypondfile{...}</description>
+</snippet>

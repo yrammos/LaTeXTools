@@ -1,0 +1,13 @@
+<snippet>
+<content><![CDATA[
+% \openlytex
+\begin[${1:Add any options here}]{lilypond}
+	${2:Type your music in here}
+\end{lilypond}
+% \closelytex
+]]>
+</content>
+<scope>text.tex.latex</scope>
+<tabTrigger>beginlilypond</tabTrigger>
+<description>\begin{lilypond}...\end{lilypond}</description>
+</snippet>
