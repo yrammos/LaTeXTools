@@ -32,14 +32,14 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 		i = ii = j = jj = g = -1
 
 		# Find the opening and closing line numbers of the next LilyPond hunk in the .tex and .lytex files.
-		while i < old_line:
-			i, r = jump_aux.line_of_next_occurrence(tex, ii, jump_aux.lytex_scope_open)
+		while ii < old_line:
+			i, r = jump_aux.line_of_next_occurrence(tex, ii, jump_aux.lytex_scope_open_regex, True)
 			# print "i = ", i
-			ii, r = jump_aux.line_of_next_occurrence(tex, i, jump_aux.lytex_scope_close)
+			ii, r = jump_aux.line_of_next_occurrence(tex, i, jump_aux.lytex_scope_close_regex, True)
 			# print "ii = ", ii
-			j, r = jump_aux.line_of_next_occurrence(lytex, jj, jump_aux.lytex_scope_open)
+			j, r = jump_aux.line_of_next_occurrence(lytex, jj, jump_aux.lytex_scope_open_regex, True)
 			# print "j = ", j
-			jj, r = jump_aux.line_of_next_occurrence(lytex, j, jump_aux.lytex_scope_close)
+			jj, r = jump_aux.line_of_next_occurrence(lytex, j, jump_aux.lytex_scope_close_regex, True)
 			# print "jj = ", jj
 			cur_sigma = cur_sigma + (ii - i - (jj - j))
 			# print "cur_sigma = ", cur_sigma
@@ -59,7 +59,7 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 		# Inefficient but readable way to obtain the line count of the .tex file.
 		tex.seek(0)
 		l = len(tex.readlines())
-		print "l, g = ", l, g
+		# print "l, g = ", l, g
 
 		# Add -1 to the preliminary mapping if the \usepackage{graphics} line of the .tex file is located before the mapping.
 		# This last calculation finally yields the exact mapping. It seems that SyncTeX, like SublimeText, is
@@ -69,7 +69,6 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 			# print "Adjustment due. Mapping = ", mapping
 			return mapping
 		else:
-			mapping = mapping
 			# print "Adjustment not due. Mapping = ", mapping
 			return mapping
 
@@ -99,15 +98,15 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 			sublime.error_message("LaTeXTools/SyncTeX: Requested source file location contains incorrect data types. Please check your PDF viewer settings.")
 			return
 		self.tex_line = int(self.tex_line)
-		print "SyncTeX is pointing at .tex file ", self.tex_filename, "line", self.tex_line
+		# print "SyncTeX is pointing at .tex file ", self.tex_filename, "line", self.tex_line
 
 		# Attempt to open the eponymous .lytex file. If it is unavailable, simply open the .tex file itself.
 		self.tex_filename, self.tex_extension = os.path.splitext(self.tex_filename)
 		if os.path.isfile(self.tex_filename + '.lytex'):
 			# Map the .tex line number onto the .lytex file.
 			self.tex_line = self.map_tex2lytex(self.tex_line, self.tex_filename)
-			print self.tex_filename + '.lytex', "found. Opening right now at line", str(self.tex_line)
+			# print self.tex_filename + '.lytex', "found. Opening right now at line", str(self.tex_line)
 			self.window.open_file(self.tex_filename + '.lytex:' + str(self.tex_line), sublime.ENCODED_POSITION)
 		else:
-			print "There is no", self.tex_filename + '.lytex file.\n', 'Opening line', str(self.tex_line), 'of .tex file instead.'
+			# print "There is no", self.tex_filename + '.lytex file.\n', 'Opening line', str(self.tex_line), 'of .tex file instead.'
 			self.window.open_file(self.tex_filename + '.tex:' + str(self.tex_line), sublime.ENCODED_POSITION)
