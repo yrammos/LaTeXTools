@@ -1,7 +1,7 @@
 <snippet>
 <content><![CDATA[
 % \openlytex
-\begin[${1:Add any options here}]{lilypond}
+\begin{lilypond}[${1:Add any options here}]
 	${2:Type your music in here}
 \end{lilypond}
 % \closelytex
