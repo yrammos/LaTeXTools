@@ -1,0 +1,53 @@
+{ "name": "LilyPond Book",
+	"scopeName": "source.lytex",
+	"fileTypes": ["lytex"],
+	"patterns": [
+		{
+			"name":		"meta.lytex.lilypond.lytex",
+			"begin":  "((\\\\)begin{lilypond}(\\[.*\\])?)",
+			"end":   "((\\\\)end{lilypond})",
+			"patterns": [{"include": "source.lilypond"}],
+			"beginCaptures":  {
+													 "1":  {"name": "variable.lilypond"}
+												},
+			"endCaptures":  	{
+													 "1":  {"name": "variable.lilypond"}
+												}
+		},
+		{
+			"name":           "meta.lytex.lilypond.lytex",
+			"begin":          "((\\\\)lilypond(\\[.*\\])?)({)",
+			"end":            "(})",
+			"patterns":       [
+													 {"include": "#lilypond2"},
+													 {"include": "source.lilypond"}
+												],
+			"beginCaptures":  {
+													 "1":   {"name":  "variable.lilypond"},
+													 "4":   {"name":  "entity.other.inherited-class.python.lilypond"}
+												},
+			"endCaptures":  	{
+													 "1":   {"name":  "entity.other.inherited-class.python.lilypond"}
+												}
+		},
+		{"include": "text.tex.latex"}
+	],
+	"repository": {
+		"lilypond2": {
+										"begin":          "({)",
+										"end":            "(})",
+										"beginCaptures":  {
+																				"1":  {"name":  "entity.other.inherited-class.python.lilypond"}
+																			},
+										"endCaptures":  	{
+																				"1":  {"name":  "entity.other.inherited-class.python.lilypond"}
+																			},
+										"name":           "meta.lytex.lilypond2.lytex",
+										"patterns":       [
+																				{"include": "#lilypond2"},
+																				{"include": "source.lilypond"}
+																			]
+									}
+	},
+	"uuid": "ed599d76-5c58-49ff-b1a7-63ccf52d0623"
+}
