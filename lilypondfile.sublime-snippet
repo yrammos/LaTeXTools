@@ -5,7 +5,7 @@
 % \closelytex
 ]]>
 </content>
-<scope>text.tex.latex</scope>
+<scope>text.tex.latex.lytex</scope>
 <tabTrigger>lilypondfile</tabTrigger>
 <description>\lilypondfile{...}</description>
 </snippet>

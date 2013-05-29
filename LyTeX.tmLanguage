@@ -12,29 +12,63 @@
 	<array>
 		<dict>
 			<key>begin</key>
-			<string>((\\)begin{lilypond}(\[.*\])?)</string>
+			<string>(((\\)begin)\s*({)\s*lilypond\s*(})\s*((\[).*(\]))?)</string>
 			<key>beginCaptures</key>
 			<dict>
-				<key>1</key>
+				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>variable.lilypond</string>
+					<string>support.function.general.tex.lilypond</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.section.group.tex.lilypond</string>
+				</dict>
+				<key>5</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.section.group.tex.lilypond</string>
+				</dict>
+				<key>7</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.brackets.tex.lilypond</string>
+				</dict>
+				<key>8</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.brackets.tex.lilypond</string>
 				</dict>
 			</dict>
 			<key>end</key>
-			<string>((\\)end{lilypond})</string>
+			<string>(((\\)end)\s*({)\s*lilypond\s*(}))</string>
 			<key>endCaptures</key>
 			<dict>
-				<key>1</key>
+				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>variable.lilypond</string>
+					<string>support.function.general.tex.lilypond</string>
+				</dict>
+				<key>4</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.section.group.tex.lilypond</string>
+				</dict>
+				<key>5</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.section.group.tex.lilypond</string>
 				</dict>
 			</dict>
 			<key>name</key>
-			<string>meta.lytex.lilypond.lytex</string>
+			<string>meta.lytex.lilypond</string>
 			<key>patterns</key>
 			<array>
+				<dict>
+					<key>include</key>
+					<string>#lilypond</string>
+				</dict>
 				<dict>
 					<key>include</key>
 					<string>source.lilypond</string>
@@ -43,18 +77,28 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>((\\)lilypond(\[.*\])?)({)</string>
+			<string>((\\lilypond)\s*((\[).*(\])\s*)?)({)</string>
 			<key>beginCaptures</key>
 			<dict>
-				<key>1</key>
+				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>variable.lilypond</string>
+					<string>support.function.general.tex.lilypond</string>
 				</dict>
 				<key>4</key>
 				<dict>
 					<key>name</key>
-					<string>entity.other.inherited-class.python.lilypond</string>
+					<string>punctuation.definition.brackets.tex.lilypond</string>
+				</dict>
+				<key>5</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.brackets.tex.lilypond</string>
+				</dict>
+				<key>6</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.section.group.tex.lilypond</string>
 				</dict>
 			</dict>
 			<key>end</key>
@@ -64,16 +108,16 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>entity.other.inherited-class.python.lilypond</string>
+					<string>punctuation.section.group.tex.lilypond</string>
 				</dict>
 			</dict>
 			<key>name</key>
-			<string>meta.lytex.lilypond.lytex</string>
+			<string>meta.lytex.lilypond</string>
 			<key>patterns</key>
 			<array>
 				<dict>
 					<key>include</key>
-					<string>#lilypond2</string>
+					<string>#lilypond</string>
 				</dict>
 				<dict>
 					<key>include</key>
@@ -88,7 +132,7 @@
 	</array>
 	<key>repository</key>
 	<dict>
-		<key>lilypond2</key>
+		<key>lilypond</key>
 		<dict>
 			<key>begin</key>
 			<string>({)</string>
@@ -111,12 +155,12 @@
 				</dict>
 			</dict>
 			<key>name</key>
-			<string>meta.lytex.lilypond2.lytex</string>
+			<string>meta.lytex.lilypond</string>
 			<key>patterns</key>
 			<array>
 				<dict>
 					<key>include</key>
-					<string>#lilypond2</string>
+					<string>#lilypond</string>
 				</dict>
 				<dict>
 					<key>include</key>
@@ -126,7 +170,7 @@
 		</dict>
 	</dict>
 	<key>scopeName</key>
-	<string>source.lytex</string>
+	<string>text.tex.latex.lytex</string>
 	<key>uuid</key>
 	<string>ed599d76-5c58-49ff-b1a7-63ccf52d0623</string>
 </dict>

@@ -1,53 +1,66 @@
 { "name": "LilyPond Book",
-	"scopeName": "source.lytex",
-	"fileTypes": ["lytex"],
-	"patterns": [
-		{
-			"name":		"meta.lytex.lilypond.lytex",
-			"begin":  "((\\\\)begin{lilypond}(\\[.*\\])?)",
-			"end":   "((\\\\)end{lilypond})",
-			"patterns": [{"include": "source.lilypond"}],
-			"beginCaptures":  {
-													 "1":  {"name": "variable.lilypond"}
-												},
-			"endCaptures":  	{
-													 "1":  {"name": "variable.lilypond"}
-												}
-		},
-		{
-			"name":           "meta.lytex.lilypond.lytex",
-			"begin":          "((\\\\)lilypond(\\[.*\\])?)({)",
-			"end":            "(})",
-			"patterns":       [
-													 {"include": "#lilypond2"},
-													 {"include": "source.lilypond"}
-												],
-			"beginCaptures":  {
-													 "1":   {"name":  "variable.lilypond"},
-													 "4":   {"name":  "entity.other.inherited-class.python.lilypond"}
-												},
-			"endCaptures":  	{
-													 "1":   {"name":  "entity.other.inherited-class.python.lilypond"}
-												}
-		},
-		{"include": "text.tex.latex"}
-	],
-	"repository": {
-		"lilypond2": {
-										"begin":          "({)",
-										"end":            "(})",
-										"beginCaptures":  {
-																				"1":  {"name":  "entity.other.inherited-class.python.lilypond"}
-																			},
-										"endCaptures":  	{
-																				"1":  {"name":  "entity.other.inherited-class.python.lilypond"}
-																			},
-										"name":           "meta.lytex.lilypond2.lytex",
-										"patterns":       [
-																				{"include": "#lilypond2"},
-																				{"include": "source.lilypond"}
-																			]
-									}
-	},
-	"uuid": "ed599d76-5c58-49ff-b1a7-63ccf52d0623"
+    "scopeName": "text.tex.latex.lytex",
+    "fileTypes": ["lytex"],
+    "patterns": [
+        {
+            "name":           "meta.lytex.lilypond",
+            "begin":          "(((\\\\)begin)\\s*({)\\s*lilypond\\s*(})\\s*((\\[).*(\\]))?)",
+            "end":            "(((\\\\)end)\\s*({)\\s*lilypond\\s*(}))",
+            "patterns":       [
+                                    {"include": "#lilypond"},
+                                    {"include": "source.lilypond"}
+                              ],
+            "beginCaptures":  {
+                                    "2":  {"name": "support.function.general.tex.lilypond"},
+                                    "3":  {"name":  "punctuation.section.group.tex.lilypond"},
+                                    "5":  {"name":  "punctuation.section.group.tex.lilypond"},
+                                    "7":  {"name":  "punctuation.definition.brackets.tex.lilypond"},
+                                    "8":  {"name":  "punctuation.definition.brackets.tex.lilypond"}
+                              },
+            "endCaptures":    {
+                                    "2":  {"name": "support.function.general.tex.lilypond"},
+                                    "4":  {"name":  "punctuation.section.group.tex.lilypond"},
+                                    "5":  {"name":  "punctuation.section.group.tex.lilypond"}
+                              }
+        },
+        {
+            "name":           "meta.lytex.lilypond",
+            "begin":          "((\\\\lilypond)\\s*((\\[).*(\\])\\s*)?)({)",
+            "end":            "(})",
+            "patterns":       [
+                                    {"include": "#lilypond"},
+                                    {"include": "source.lilypond"}
+                              ],
+            "beginCaptures":  {
+                                    "2":   {"name":  "support.function.general.tex.lilypond"},
+                                    "4":   {"name":  "punctuation.definition.brackets.tex.lilypond"},
+                                    "5":   {"name":  "punctuation.definition.brackets.tex.lilypond"},
+                                    "6":   {"name":  "punctuation.section.group.tex.lilypond"}
+                              },
+            "endCaptures":    {
+                                    "1":   {"name":  "punctuation.section.group.tex.lilypond"}
+                              }
+        },
+        {   
+            "include":        "text.tex.latex"
+        }
+    ],
+    "repository": {
+        "lilypond": {
+                              "begin":          "({)",
+                              "end":            "(})",
+                              "beginCaptures":  {
+                                                    "1":  {"name":  "entity.other.inherited-class.python.lilypond"}
+                                                },
+                              "endCaptures":    {
+                                                    "1":  {"name":  "entity.other.inherited-class.python.lilypond"}
+                                                },
+                              "name":           "meta.lytex.lilypond",
+                              "patterns":       [
+                                                      {"include": "#lilypond"},
+                                                      {"include": "source.lilypond"}
+                                                ]
+                    }
+    },
+    "uuid": "ed599d76-5c58-49ff-b1a7-63ccf52d0623"
 }
