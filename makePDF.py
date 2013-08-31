@@ -309,7 +309,7 @@ class CmdThread(threading.Thread):
 			#    (this can happen if you have stopped the make process using ^Z and can be fixed by manually running kill).
 			time.sleep(2)
 			print("Time before wait: ", time.gmtime())
-			proc = subprocess.Popen(["/Users/rammos/Dropbox/Repository/Sublime Text 2/Packages/LyTeXTools/polltexmk.sh"])
+			proc = subprocess.Popen(["/Users/rammos/Library/Application Support/Sublime Text 2/Packages/LyTeXTools/polltexmk.sh"])
 			proc.wait()
 			print("Time after wait: ", time.gmtime())
 
@@ -348,7 +348,7 @@ class CmdThread(threading.Thread):
 			lilyerr = open(".lytexerr.log", 'r').read()
 			print "command line error code (lil/lat/ok) =", lilyerr
 		except:
-			content.append("The error-checking subsystem of LyTeXTools is malfunctioning. This is not a fatal but bear in mind that you will not be informed of any possible lilypond-book errors.")
+			content.append("The error-checking subsystem of LyTeXTools is malfunctioning. This is not fatal but bear in mind that you will not be informed of any possible lilypond-book errors.")
 
 		# If lilypond-book exited with a non-zero error code, terminate the build.
 		if (lilyerr == "lil\n"):
