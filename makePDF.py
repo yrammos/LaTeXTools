@@ -305,10 +305,9 @@ class CmdThread(threading.Thread):
 		else:
 			proc = subprocess.Popen(cmd)
 			# The folowing hackwork should block the thread until the tmux-resident cmd is completed.
-			# Please ensure that:
-			# 1. polltexmk.sh is accessible via the PATH or a full path is provided below;
-			# 2. there are no "stopped" (status code: T) processes for latex or perl when running ps -A.
-			#    (this can happen if you have stopped the make process using ^Z and can be fixed by manually running kill).
+			# If it fails, please ensure that there are no "stopped" (status code: T) processes for latex 
+			# or perl when running ps -A (this can happen if you have stopped the make process 
+			# using ^Z and can be fixed by manually running kill).
 			time.sleep(2)
 			print("Time before wait: ", time.gmtime())
 			proc = subprocess.Popen(os.path.join(lytex_path, "polltexmk.sh"))
