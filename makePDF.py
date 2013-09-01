@@ -4,6 +4,8 @@ import subprocess
 import types
 import re
 import getTeXRoot
+# Retrieve the LyTeXTools path to facilitate the polltexmk.sh invocation.
+lytex_path = os.getcwd()
 import time
 
 DEBUG = False
@@ -309,7 +311,7 @@ class CmdThread(threading.Thread):
 			#    (this can happen if you have stopped the make process using ^Z and can be fixed by manually running kill).
 			time.sleep(2)
 			print("Time before wait: ", time.gmtime())
-			proc = subprocess.Popen(["/Users/rammos/Library/Application Support/Sublime Text 2/Packages/LyTeXTools/polltexmk.sh"])
+			proc = subprocess.Popen(os.path.join(lytex_path, "polltexmk.sh"))
 			proc.wait()
 			print("Time after wait: ", time.gmtime())
 
