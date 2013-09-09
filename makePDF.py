@@ -278,14 +278,14 @@ class CmdThread(threading.Thread):
 		# TeX Root filename has .tex extension: lilypond-book not to be invoked
 		if self.caller.split_file_name[1].upper() in ('.TEX'):
 			cmd = ["tmux", "send-keys", "-t", "mainmux:2.1",
-				"cd " + self.caller.file_path + " && echo ok > .lytexerr.log && " + "latexmk -e '$pdflatex=q/xelatex %O -interaction=errorstopmode -file-line-error -synctex=1 %S/' -f- -pdf " + self.caller.file_name, "C-m"];
+				"cd " + self.caller.file_path + " && echo lat > .lytexerr.log && " + "latexmk -e '$pdflatex=q/xelatex %O -interaction=nonstopmode -synctex=1 %S/' -f -pdf " + self.caller.file_name + " && echo ok > .lytexerr.log", "C-m"];
 			self.caller.output("[Compiling " + self.caller.file_name + "]")
 			if DEBUG:
 				print cmd
 		# TeX Root filename has .lytex extension: lilypond-book to be invoked
 		else:
 			cmd = ["tmux", "send-keys", "-t", "mainmux:2.1",
-				"cd " + self.caller.file_path + " && echo lil > .lytexerr.log && " + "lilypond-book -f latex --pdf " + self.caller.file_name + " && echo lat > .lytexerr.log && " + "latexmk -e '$pdflatex=q/xelatex %O -interaction=errorstopmode -file-line-error -synctex=1 %S/' -f- -pdf " + self.caller.split_file_name[0] + " && echo ok > .lytexerr.log", "C-m"];
+				"cd " + self.caller.file_path + " && echo lil > .lytexerr.log && " + "lilypond-book -f latex --pdf " + self.caller.file_name + " && echo lat > .lytexerr.log && " + "latexmk -e '$pdflatex=q/xelatex %O -interaction=nonstopmode -synctex=1 %S/' -f -pdf " + self.caller.split_file_name[0] + " && echo ok > .lytexerr.log", "C-m"];
 			self.caller.output("[Compiling " + self.caller.file_name + "]")
 			if DEBUG:
 				print cmd
@@ -296,7 +296,6 @@ class CmdThread(threading.Thread):
 			# The user decides in the build system  whether he wants to append $PATH
 			# or tuck it at the front: "$PATH;C:\\new\\path", "C:\\new\\path;$PATH"
 			os.environ["PATH"] = os.path.expandvars(self.caller.path).encode(sys.getfilesystemencoding())
-
 		if platform.system() == "Windows":
 			# make sure console does not come up
 			startupinfo = subprocess.STARTUPINFO()
@@ -305,8 +304,8 @@ class CmdThread(threading.Thread):
 		else:
 			proc = subprocess.Popen(cmd)
 			# The folowing hackwork should block the thread until the tmux-resident cmd is completed.
-			# If it fails, please ensure that there are no "stopped" (status code: T) processes for latex 
-			# or perl when running ps -A (this can happen if you have stopped the make process 
+			# If it fails, please ensure that there are no "stopped" (status code: T) processes for latex
+			# or perl when running ps -A (this can happen if you have stopped the make process
 			# using ^Z and can be fixed by manually running kill).
 			time.sleep(2)
 			print("Time before wait: ", time.gmtime())
@@ -340,10 +339,10 @@ class CmdThread(threading.Thread):
 		print "Finished normally"
 		print proc.returncode
 
-		# Now, first check for a lilypond-book failure. The cmd stores its exit code in a .lytexerr.log file.
-		# Case lil: lilypond error
-		# Case lat: LaTeX error
-		# Case ok:  No error
+		# Now, first check for a lilypond-book failure. The cmd stores its exit code in a .lytexerr.log file. Key to values:
+		# lil: lilypond error
+		# lat: LaTeX error
+		# ok:  No error
 		content = ["", ""]
 		try:
 			lilyerr = open(".lytexerr.log", 'r').read()
@@ -353,12 +352,12 @@ class CmdThread(threading.Thread):
 
 		# If lilypond-book exited with a non-zero error code, terminate the build.
 		if (lilyerr == "lil\n"):
-			content.append("lilypond-book produced an error. Also, as a result, LaTeX did not run at all. Check your lilypond-book log.")
+			content.append("lilypond-book produced an error. Also, as a result, LaTeX did not run at all. Check out lilypond-book.log for more specific information.")
 			self.caller.output(content)
 			self.caller.output("\n\n[Failed...]\n")
 			return
 
-		# Now we can be sure that in the worst case we only have LaTeX errors.	
+		# Now we can be sure that in the worst case we only have LaTeX errors.
 
 		# this is a conundrum. We used (ST1) to open in binary mode ('rb') to avoid
 		# issues, but maybe we just need to decode?
