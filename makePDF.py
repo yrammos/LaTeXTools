@@ -278,14 +278,14 @@ class CmdThread(threading.Thread):
 		# TeX Root filename has .tex extension: lilypond-book not to be invoked
 		if self.caller.split_file_name[1].upper() in ('.TEX'):
 			cmd = ["tmux", "send-keys", "-t", "mainmux:2.1",
-				"cd " + self.caller.file_path + " && echo lat > .lytexerr.log && " + "latexmk -e '$pdflatex=q/xelatex %O -interaction=nonstopmode -synctex=1 %S/' -f -pdf " + self.caller.file_name + " && echo ok > .lytexerr.log", "C-m"];
+				"cd " + self.caller.file_path + " && echo lat > .lytexerr.log && " + "latexmk -e '$pdflatex=q/pdflatex %O -interaction=nonstopmode -synctex=1 %S/' -f -pdf " + self.caller.file_name + " && echo ok > .lytexerr.log", "C-m"];
 			self.caller.output("[Compiling " + self.caller.file_name + "]")
 			if DEBUG:
 				print cmd
 		# TeX Root filename has .lytex extension: lilypond-book to be invoked
 		else:
 			cmd = ["tmux", "send-keys", "-t", "mainmux:2.1",
-				"cd " + self.caller.file_path + " && echo lil > .lytexerr.log && " + "lilypond-book -f latex --pdf " + self.caller.file_name + " && echo lat > .lytexerr.log && " + "latexmk -e '$pdflatex=q/xelatex %O -interaction=nonstopmode -synctex=1 %S/' -f -pdf " + self.caller.split_file_name[0] + " && echo ok > .lytexerr.log", "C-m"];
+				"cd " + self.caller.file_path + " && echo lil > .lytexerr.log && " + "lilypond-book -f latex --pdf " + self.caller.file_name + " && echo lat > .lytexerr.log && " + "latexmk -e '$pdflatex=q/pdflatex %O -interaction=nonstopmode -synctex=1 %S/' -f -pdf " + self.caller.split_file_name[0] + " && echo ok > .lytexerr.log", "C-m"];
 			self.caller.output("[Compiling " + self.caller.file_name + "]")
 			if DEBUG:
 				print cmd
