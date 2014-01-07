@@ -1,4 +1,6 @@
-import sublime, sublime_plugin, re, os, jump_aux
+# ST2/ST3 compat
+import sublime, sublime_plugin, re, os
+from . import jump_aux
 
 # Addendum for LilyPond-book support in the LaTeXTools package for Sublime Text 2 by msiniscalchi.
 # Please report bugs related to this addendum to Yannis Rammos (yannis.rammos [at] me.com)
@@ -34,23 +36,23 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 		# Find the opening and closing line numbers of the next LilyPond hunk in the .tex and .lytex files.
 		while ii < old_line:
 			i, r = jump_aux.line_of_next_occurrence(tex, ii, jump_aux.lytex_scope_open_regex, True)
-			# print "i = ", i
+			# print ("i = ", i)
 			ii, r = jump_aux.line_of_next_occurrence(tex, i, jump_aux.lytex_scope_close_regex, True)
-			# print "ii = ", ii
+			# print ("ii = ", ii)
 			j, r = jump_aux.line_of_next_occurrence(lytex, jj, jump_aux.lytex_scope_open_regex, True)
-			# print "j = ", j
+			# print ("j = ", j)
 			jj, r = jump_aux.line_of_next_occurrence(lytex, j, jump_aux.lytex_scope_close_regex, True)
-			# print "jj = ", jj
+			# print ("jj = ", jj)
 			cur_sigma = cur_sigma + (ii - i - (jj - j))
-			# print "cur_sigma = ", cur_sigma
+			# print ("cur_sigma = ", cur_sigma)
 
 		# The previous loop has stopped at the Lilypond hunk immediately following the cursor. Revoke the last iteration to account only for hunks before the cursor.
 		cur_sigma = cur_sigma - (ii - i - (jj - j))
-		# print "cur_sigma (adjusted) = ", cur_sigma
+		# print ("cur_sigma (adjusted) = ", cur_sigma)
 
 		# Preliminarily calculate at which line the old_line of the .texly maps into the .tex.
 		mapping = old_line - cur_sigma
-		# print "Before preamble adjustment: Old line:", old_line, "New line:", mapping
+		# print ("Before preamble adjustment: Old line:", old_line, "New line:", mapping)
 
 		# Find line where Lilypond has injected \usepackage{graphics} into the .tex file.
 		tex.seek(0)
@@ -59,17 +61,17 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 		# Inefficient but readable way to obtain the line count of the .tex file.
 		tex.seek(0)
 		l = len(tex.readlines())
-		# print "l, g = ", l, g
+		# print ("l, g = ", l, g)
 
 		# Add -1 to the preliminary mapping if the \usepackage{graphics} line of the .tex file is located before the mapping.
 		# This last calculation finally yields the exact mapping. It seems that SyncTeX, like SublimeText, is
 		# counting lines starting from 1, so no translation is necessary.
 		if (g[0] < l and old_line > g[0]):
 			mapping = mapping - 1
-			# print "Adjustment due. Mapping = ", mapping
+			# print ("Adjustment due. Mapping = ", mapping)
 			return mapping
 		else:
-			# print "Adjustment not due. Mapping = ", mapping
+			# print ("Adjustment not due. Mapping = ", mapping)
 			return mapping
 
 	def run(self):
@@ -77,10 +79,10 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 		settings = sublime.load_settings("LaTeXTools.sublime-settings")
 		self.pdf_loc_filename = os.path.abspath(settings.get("synctex_output", os.path.join(os.path.expanduser("~"), ".sublatex.txt")))
 		try:
-			self.pdf_loc_file = open(os.path.abspath(self.pdf_loc_filename), "r", 0)
+			self.pdf_loc_file = open(os.path.abspath(self.pdf_loc_filename), "r")
 		# In case that file does not exist or cannot be open, produce an error message and exit.
 		except:
-			sublime.error_message("LaTeXTools/SyncTeX: Error interfacing with the PDF viewer (" + str(self.pdf_loc_file) + ").")
+			sublime.error_message("LaTeXTools/SyncTeX: Error opening the SyncTeX info file (" + str(self.pdf_loc_filename) + ").")
 			return
 
 		# Attempt to obtain the name and location of the appropriate .tex file.
@@ -98,15 +100,15 @@ class jump_from_pdfCommand(sublime_plugin.WindowCommand):
 			sublime.error_message("LaTeXTools/SyncTeX: Requested source file location contains incorrect data types. Please check your PDF viewer settings.")
 			return
 		self.tex_line = int(self.tex_line)
-		# print "SyncTeX is pointing at .tex file ", self.tex_filename, "line", self.tex_line
+		# print ("SyncTeX is pointing at .tex file ", self.tex_filename, "line", self.tex_line)
 
 		# Attempt to open the eponymous .lytex file. If it is unavailable, simply open the .tex file itself.
 		self.tex_filename, self.tex_extension = os.path.splitext(self.tex_filename)
 		if os.path.isfile(self.tex_filename + '.lytex'):
 			# Map the .tex line number onto the .lytex file.
 			self.tex_line = self.map_tex2lytex(self.tex_line, self.tex_filename)
-			# print self.tex_filename + '.lytex', "found. Opening right now at line", str(self.tex_line)
+			# print (self.tex_filename + '.lytex', "found. Opening right now at line", str(self.tex_line))
 			self.window.open_file(self.tex_filename + '.lytex:' + str(self.tex_line), sublime.ENCODED_POSITION)
 		else:
-			# print "There is no", self.tex_filename + '.lytex file.\n', 'Opening line', str(self.tex_line), 'of .tex file instead.'
+			# print ("There is no", self.tex_filename + '.lytex file.\n', 'Opening line', str(self.tex_line), 'of .tex file instead.')
 			self.window.open_file(self.tex_filename + '.tex:' + str(self.tex_line), sublime.ENCODED_POSITION)

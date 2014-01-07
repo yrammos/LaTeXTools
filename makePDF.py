@@ -17,7 +17,10 @@ import subprocess
 import types
 import re
 # Retrieve the LyTeXTools path to facilitate the polltexmk.sh invocation.
-lytex_path = os.getcwd()
+import inspect
+filename = inspect.getframeinfo(inspect.currentframe()).filename
+lytex_path = os.path.dirname(os.path.abspath(filename))
+# lytex_path = os.getcwd()
 import time
 import codecs
 
@@ -46,7 +49,7 @@ def getOEMCP():
 # Output: content to be displayed in output panel, split into lines
 
 def parseTeXlog(log):
-	print "Parsing log file"
+	print ("Parsing log file")
 	errors = []
 	warnings = []
 
@@ -91,13 +94,16 @@ def parseTeXlog(log):
 		# first of all, see if we have a line to recycle (see heuristic for "l.<nn>" lines)
 		if recycle_extra:
 			line = extra
-			#print "Recycling line"
+			#print ("Recycling line")
 			recycle_extra = False
 		else:
 			# save previous line for "! File ended while scanning use of..." message
 			prev_line = line
 			try:
-				line = log_iterator.next()  # will fail when no more lines
+				if _ST3:
+					line = log_iterator.__next__()  # will fail when no more lines
+				else:
+					line = log_iterator.next()
 			except StopIteration:
 				break
 		line_num += 1
@@ -111,13 +117,16 @@ def parseTeXlog(log):
 		# HEURISTIC: the first line is always long, and we don't care about it
 		# also, the **<file name> line may be long, but we skip it, too (to avoid edge cases)
 		if line_num > 1 and len(line) >= 79 and line[0:2] != "**":
-			# print "Line %d is %d characters long; last char is %s" % (line_num, len(line), line[-1])
+			# print ("Line %d is %d characters long; last char is %s" % (line_num, len(line), line[-1]))
 			# HEURISTICS HERE
 			extend_line = True
 			recycle_extra = False
 			while extend_line:
 				try:
-					extra = log_iterator.next()
+					if _ST3:
+						extra = log_iterator.__next__()
+					else:
+						extra = log_iterator.next()
 					line_num += 1  # for debugging purposes
 					# HEURISTIC: if extra line begins with "Package:" "File:" "Document Class:",
 					# or other "well-known markers",
@@ -131,7 +140,7 @@ def parseTeXlog(log):
 					# and may use the whole line. Then it prints "...", and "l.<nn> <text>" on a new line
 					# If so, do not extend
 					elif line[-3:] == "..." and line_rx.match(extra):  # a bit inefficient as we match twice
-						#print "Found l. <nn> regex"
+						#print ("Found l. <nn> regex")
 						extend_line = False
 						recycle_extra = True  # make sure we process the "l.<nn>" line!
 					else:
@@ -146,7 +155,7 @@ def parseTeXlog(log):
 			continue
 		if state == STATE_REPORT_ERROR:
 			# skip everything except "l.<nn> <text>"
-			print line
+			print (line)
 			err_match = line_rx.match(line)
 			if not err_match:
 				continue
@@ -174,9 +183,9 @@ def parseTeXlog(log):
 		while True:
 			line_purged = matched_parens_rx.sub("", line)
 			# if line != line_purged:
-				# print "Purged parens on line %d:" % (line_num, )
-				# print line
-				# print line_purged
+				# print ("Purged parens on line %d:" % (line_num, ))
+				# print (line)
+				# print (line_purged)
 			if line != line_purged:
 				line = line_purged
 			else:
@@ -185,9 +194,14 @@ def parseTeXlog(log):
 		if "! File ended while scanning use of" in line:
 			scanned_command = line[35:-2]  # skip space and period at end
 			# we may be unable to report a file by popping it, so HACK HACK HACK
-			file_name = log_iterator.next()  # <inserted text>
-			file_name = log_iterator.next()  # \par
-			file_name = log_iterator.next()[3:]  # here is the file name with <*> in front
+			if _ST3:
+				file_name = log_iterator.__next__()  # <inserted text>
+				file_name = log_iterator.__next__()  # \par
+				file_name = log_iterator.__next__()[3:]  # here is the file name with <*> in front
+			else:
+				file_name = log_iterator.next()  # <inserted text>
+				file_name = log_iterator.next()  # \par
+				file_name = log_iterator.next()[3:]  # here is the file name with <*> in front				
 			errors.append("TeX STOPPED: " + line[2:-2] + prev_line[:-5])
 			errors.append("TeX reports the error was in file:" + file_name)
 			continue
@@ -209,7 +223,10 @@ def parseTeXlog(log):
 			ou_processing = True
 			while ou_processing:
 				try:
-					line = log_iterator.next()  # will fail when no more lines
+					if _ST3:
+						line = log_iterator.__next__()  # will fail when no more lines
+					else:
+						line = log_iterator.next()  # will fail when no more lines
 				except StopIteration:
 					break
 				line_num += 1
@@ -225,14 +242,14 @@ def parseTeXlog(log):
 		while len(line)>0 and line[0] == ')':  # denotes end of processing of current file: pop it from stack
 			# files.pop()
 			if DEBUG:
-				print " " * len(files) + files[-1] + " (%d)" % (line_num,)
+				print (" " * len(files) + files[-1] + " (%d)" % (line_num,))
 			if files:
 				files.pop()
 			else:
 				errors.append("LaTeXTools cannot correctly detect file names in this LOG file.")
 				errors.append("Please let me know via GitHub. Thanks!")
 				if DEBUG:
-					print "Popping inexistent files"
+					print ("Popping inexistent files")
 				break
 			line = line[1:]  # lather, rinse, repeat
 		line.strip()  # again, to make sure there is no ") (filename" pattern
@@ -244,9 +261,9 @@ def parseTeXlog(log):
 				file_name = file_name[1:-1]
 			files.append(file_name)
 			if DEBUG:
-				print " " * len(files) + files[-1] + " (%d)" % (line_num,)
+				print (" " * len(files) + files[-1] + " (%d)" % (line_num,))
 		if len(line) > 0 and line[0] == '!':  # Now it's surely an error
-			print line
+			print (line)
 			err_msg = line[2:]  # skip "! "
 			# next time around, err_msg will be set and we'll extract all info
 			state = STATE_REPORT_ERROR
@@ -276,7 +293,7 @@ class CmdThread(threading.Thread):
 		threading.Thread.__init__(self)
 
 	def run(self):
-		print "Welcome to thread " + self.getName()
+		print ("Welcome to thread " + self.getName())
 		# The original command is:
 		# cmd = self.caller.make_cmd + [self.caller.file_name]
 		# But it is hacked here to route the latexmk through tmux
@@ -285,8 +302,8 @@ class CmdThread(threading.Thread):
 		self.caller.file_path = self.caller.file_name.replace(os.path.basename(self.caller.file_name), "")
 		# Obtain filename extension
 		self.caller.split_file_name = os.path.splitext(self.caller.file_name)
-		print "self.caller.split_file_name = ", self.caller.split_file_name
-		print "Filename extension is: " + str(self.caller.split_file_name[1])
+		print ("self.caller.split_file_name = ", self.caller.split_file_name)
+		print ("Filename extension is: " + str(self.caller.split_file_name[1]))
 
 		# TeX Root filename has .tex extension: lilypond-book not to be invoked
 		if self.caller.split_file_name[1].upper() in ('.TEX'):
@@ -363,9 +380,10 @@ class CmdThread(threading.Thread):
 		content = ["", ""]
 		try:
 			lilyerr = open(".lytexerr.log", 'r').read()
-			print "command line error code (lil/lat/ok) =", lilyerr
+			print ("command line error code (lil/lat/ok) =", lilyerr)
 		except:
-			content.append("The error-checking subsystem of LyTeXTools is malfunctioning. This is not fatal but bear in mind that you will not be informed of any possible lilypond-book errors.")
+			content.append("The error-checking subsystem of LyTeXTools is malfunctioning. This does not need to be fatal but we are aborting to avoid possibly misleading error messages.")
+			return
 
 		# If lilypond-book exited with a non-zero error code, terminate the build.
 		if (lilyerr == "lil\n"):
@@ -398,16 +416,20 @@ class CmdThread(threading.Thread):
 		
 		# Note to self: need to think whether we don't want to codecs.open this, too...
 		data = open(self.caller.tex_base + ".log", 'rb').read()		
-
 		errors = []
 		warnings = []
 
 		try:
-			data = open(self.caller.tex_base + ".log", 'r') \
-			.read().decode(self.caller.encoding, 'ignore') \
-			.encode(sublime_plugin.sys.getdefaultencoding(), 'ignore').splitlines()
+			if _ST3:
+				data = open(self.caller.tex_base + ".log", 'r') \
+				.read().splitlines()
+			else:	
+				data = open(self.caller.tex_base + ".log", 'r') \
+				.read().decode(self.caller.encoding, 'ignore') \
+				.encode(sublime_plugin.sys.getdefaultencoding(), 'ignore').splitlines()
 		except:
 			content.append("Critical error: Cannot find LaTeX log.")
+			print (sys.exc_info())
 			self.caller.output(content)
 			self.caller.output("\n\n[Failed...]\n")
 			return
@@ -485,7 +507,6 @@ class make_pdfCommand(sublime_plugin.WindowCommand):
 
 		# Get parameters from sublime-build file:
 		self.make_cmd = cmd
-
 		# I actually think self.file_name is it already
 		self.engine = 'pdflatex' # Standard pdflatex
 		for line in codecs.open(self.file_name, "r", "UTF-8", "ignore").readlines():
@@ -510,7 +531,7 @@ class make_pdfCommand(sublime_plugin.WindowCommand):
 		self.output_view.settings().set("result_file_regex", file_regex)
 
 		if view.is_dirty():
-			print "saving..."
+			print ("saving...")
 			view.run_command('save')  # call this on view, not self.window
 
 		if self.tex_ext.upper() not in (".TEX", ".LYTEX"):
@@ -527,7 +548,7 @@ class make_pdfCommand(sublime_plugin.WindowCommand):
 		else:
 			sublime.error_message("Platform as yet unsupported. Sorry!")
 			return
-		# print self.make_cmd + [self.file_name]
+		# print (self.make_cmd + [self.file_name])
 
 		os.chdir(tex_dir)
 		CmdThread(self).start()

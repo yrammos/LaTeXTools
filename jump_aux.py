@@ -1,3 +1,4 @@
+# ST2/ST3 compat
 # Addendum for LilyPond-book support in the LaTeXTools package for Sublime Text 2 by msiniscalchi.
 # Please report bugs related to this addendum to Yannis Rammos (yannis.rammos [at] me.com)
 # or github.com/yrammos.
@@ -27,29 +28,29 @@ def line_of_next_occurrence(target, startpos, strings, regex=False):
 		s = s.replace('\r', '').lower()
 		return s
 
-	# print "Seeking: ", strings
+	# print ("Seeking: ", strings)
 	# re_lytex_opening = re.compile(r"\\begin(\[[A-Za-z0-9=., ]*\])?{lilypond}", re.IGNORECASE)
 	r = target.readline()
 	if not regex:
 		r = filter_line(r)
 		counter = startpos + 1
-		# print "           scanning line: ", counter, ":  ", repr(r)
+		# print ("           scanning line: ", counter, ":  ", repr(r))
 		while r:
 			if r in strings:
 				return counter, strings.index(r)
 			r = target.readline()
 			r = filter_line(r)
 			counter = counter + 1
-			# print "           scanning line: ", counter, ":  ", repr(r)
+			# print ("           scanning line: ", counter, ":  ", repr(r))
 		return counter, 0
 	else:
 		counter = startpos + 1
-		# print "           scanning line: ", counter, ":  ", repr(r)
+		# print ("           scanning line: ", counter, ":  ", repr(r))
 		while r:
 			for pat in strings:
 				if re.search(pat, r):
 					return counter, strings.index(pat)
 			r = target.readline()
 			counter = counter + 1
-			# print "           scanning line: ", counter, ":  ", repr(r)
+			# print ("           scanning line: ", counter, ":  ", repr(r))
 		return counter, 0
