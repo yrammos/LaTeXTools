@@ -31,9 +31,9 @@ class Delete_temp_filesCommand(sublime_plugin.WindowCommand):
 
 		for temp_ext in temp_exts:
 			file_name_to_del = self.tex_base + temp_ext
-			#print file_name_to_del
+			# print (file_name_to_del)
 			if os.path.exists(file_name_to_del):
-				#print ' deleted '
+				# print (' deleted ')
 				os.remove(file_name_to_del)
 
 		sublime.status_message("Deleted the temp files")
