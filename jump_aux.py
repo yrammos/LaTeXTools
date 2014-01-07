@@ -5,7 +5,7 @@
 #
 # This module, jump_aux.py, provides constants and auxiliary functions for use with the SyncTeX implementation in LyTeXTools.
 
-import re
+import re, sublime
 
 lytex_scope_open = ["%\\openlytex\n"]
 lytex_scope_close = ["%\\closelytex\n"]
@@ -30,7 +30,10 @@ def line_of_next_occurrence(target, startpos, strings, regex=False):
 
 	# print ("Seeking: ", strings)
 	# re_lytex_opening = re.compile(r"\\begin(\[[A-Za-z0-9=., ]*\])?{lilypond}", re.IGNORECASE)
-	r = target.readline()
+	try:
+		r = target.readline()
+	except:
+		sublime.error_message("Impossible to parse the source file for SyncTeX.\n\nTip: This often happens because the file is not encoded in UTF-8.")
 	if not regex:
 		r = filter_line(r)
 		counter = startpos + 1
