@@ -320,6 +320,9 @@ class CmdThread(threading.Thread):
 			if DEBUG:
 				print (cmd.encode('UTF-8'))
 
+		# Initialize log file object.
+		data = open(self.caller.tex_base + ".log", 'w').truncate(0)
+
 		# Handle path; copied from exec.py
 		if self.caller.path:
 			old_path = os.environ["PATH"]
@@ -415,7 +418,6 @@ class CmdThread(threading.Thread):
 		# 121101 -- moved splitting and decoding logic to parseTeXlog, where it belongs.
 
 		# Note to self: need to think whether we don't want to codecs.open this, too...
-		data = open(self.caller.tex_base + ".log", 'w').truncate(0)
 		errors = []
 		warnings = []
 
