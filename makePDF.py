@@ -428,7 +428,7 @@ class CmdThread(threading.Thread):
 				.read().decode(self.caller.encoding, 'ignore') \
 				.encode(sublime_plugin.sys.getdefaultencoding(), 'ignore').splitlines()
 		except:
-			content.append("Critical error: Cannot find LaTeX log.")
+			content.append("Critical error with the LaTeX log.")
 			print (sys.exc_info())
 			self.caller.output(content)
 			self.caller.output("\n\n[Failed...]\n")
