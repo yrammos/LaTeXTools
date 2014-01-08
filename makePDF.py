@@ -1,5 +1,5 @@
 # ST2/ST3 compat
-from __future__ import print_function 
+from __future__ import print_function
 import sublime
 if sublime.version() < '3000':
     # we are on ST2 and Python 2.X
@@ -201,7 +201,7 @@ def parseTeXlog(log):
 			else:
 				file_name = log_iterator.next()  # <inserted text>
 				file_name = log_iterator.next()  # \par
-				file_name = log_iterator.next()[3:]  # here is the file name with <*> in front				
+				file_name = log_iterator.next()[3:]  # here is the file name with <*> in front
 			errors.append("TeX STOPPED: " + line[2:-2] + prev_line[:-5])
 			errors.append("TeX reports the error was in file:" + file_name)
 			continue
@@ -413,9 +413,9 @@ class CmdThread(threading.Thread):
 		# byte array (? whatever read() returns), this does not happen---we only break at \n, etc.
 		# However, we must still decode the resulting lines using the relevant encoding.
 		# 121101 -- moved splitting and decoding logic to parseTeXlog, where it belongs.
-		
+
 		# Note to self: need to think whether we don't want to codecs.open this, too...
-		data = open(self.caller.tex_base + ".log", 'rb').read()		
+		data = open(self.caller.tex_base + ".log", 'w').truncate(0)
 		errors = []
 		warnings = []
 
@@ -423,7 +423,7 @@ class CmdThread(threading.Thread):
 			if _ST3:
 				data = open(self.caller.tex_base + ".log", 'r') \
 				.read().splitlines()
-			else:	
+			else:
 				data = open(self.caller.tex_base + ".log", 'r') \
 				.read().decode(self.caller.encoding, 'ignore') \
 				.encode(sublime_plugin.sys.getdefaultencoding(), 'ignore').splitlines()
@@ -519,7 +519,7 @@ class make_pdfCommand(sublime_plugin.WindowCommand):
 					# Sanity checks
 					if "texify" == self.make_cmd[0]:
 						sublime.error_message("Sorry, cannot select engine using a %!TEX program directive on MikTeX.")
-						return 
+						return
 					if not ("$pdflatex = '%E" in self.make_cmd[3]):
 						sublime.error_message("You are using a custom LaTeX.sublime-build file (in User maybe?). Cannot select engine using a %!TEX program directive.")
 						return
@@ -599,7 +599,7 @@ class make_pdfCommand(sublime_plugin.WindowCommand):
 		# if selection_was_at_end:
 		#     self.output_view.show(self.output_view.size())
 		# self.output_view.end_edit(edit)
-		self.output_view.set_read_only(True)	
+		self.output_view.set_read_only(True)
 
 	# Also from exec.py
 	# Set the selection to the start of the output panel, so next_result works
