@@ -1,5 +1,5 @@
 # ST2/ST3 compat
-from __future__ import print_function 
+from __future__ import print_function
 import sublime
 if sublime.version() < '3000':
     # we are on ST2 and Python 2.X
@@ -114,13 +114,13 @@ class jump_to_pdfCommand(sublime_plugin.TextCommand):
 		# platform-specific code:
 		plat = sublime_plugin.sys.platform
 		if plat == 'darwin':
-			options = ["-r","-g"] if keep_focus else ["-r"]		
+			options = ["-r","-g"] if keep_focus else ["-r"]
 			if forward_sync:
-				subprocess.Popen(["/Applications/Skim.app/Contents/SharedSupport/displayline"] + 
+				subprocess.Popen(["/Applications/Skim.app/Contents/SharedSupport/displayline"] +
 								options + [str(line), pdffile, srcfile])
 			else:
 				skim = os.path.join(sublime.packages_path(),
-								'LaTeXTools', 'skim', 'displayfile')
+								'LyTeXTools', 'skim', 'displayfile')
 				subprocess.Popen(['sh', skim] + options + [pdffile])
 		elif plat == 'win32':
 			# determine if Sumatra is running, launch it if not
@@ -139,7 +139,7 @@ class jump_to_pdfCommand(sublime_plugin.TextCommand):
 			# 	self.view.window().run_command("view_pdf")
 			# 	time.sleep(0.5) # wait 1/2 seconds so Sumatra comes up
 			setfocus = 0 if keep_focus else 1
-			# First send an open command forcing reload, or ForwardSearch won't 
+			# First send an open command forcing reload, or ForwardSearch won't
 			# reload if the file is on a network share
 			# command = u'[Open(\"%s\",0,%d,1)]' % (pdffile,setfocus)
 			# print (repr(command))
@@ -154,23 +154,23 @@ class jump_to_pdfCommand(sublime_plugin.TextCommand):
 				# self.view.run_command("send_dde",
 				# 		{ "service": "SUMATRA", "topic": "control", "command": command})
 
-		
+
 		elif 'linux' in plat: # for some reason, I get 'linux2' from sys.platform
 			print ("Linux!")
-			
+
 			# the required scripts are in the 'evince' subdir
 			ev_path = os.path.join(sublime.packages_path(), 'LaTeXTools', 'evince')
 			ev_fwd_exec = os.path.join(ev_path, 'evince_forward_search')
 			ev_sync_exec = os.path.join(ev_path, 'evince_sync') # for inverse search!
 			#print ev_fwd_exec, ev_sync_exec
-			
+
 			# Run evince if either it's not running, or if focus PDF was toggled
 			# Sadly ST2 has Python <2.7, so no check_output:
 			running_apps = subprocess.Popen(['ps', 'xw'], stdout=subprocess.PIPE).communicate()[0]
 			# If there are non-ascii chars in the output just captured, we will fail.
 			# Thus, decode using the 'ignore' option to simply drop them---we don't need them
 			running_apps = running_apps.decode(sublime_plugin.sys.getdefaultencoding(), 'ignore')
-			
+
 			# Run scripts through sh because the script files will lose their exec bit on github
 
 			# Get python binary if set:

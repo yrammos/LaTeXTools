@@ -10,13 +10,13 @@ LaTeX Package keymap for OS X
 	// pollute the standard bindings
 
 	// Reassign expand_selection to ctrl+l, ctrl+l
-	{ 	"keys": ["super+l","super+l"], 
+	{ 	"keys": ["super+l","super+l"],
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
 		"command": "expand_selection", "args": {"to": "line"} },
 
 	// Insert latex command or environment, and close current environment
-	{ 	"keys": ["super+l","c"], 
+	{ 	"keys": ["super+l","c"],
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
 		"command": "latexcmd"},
@@ -24,14 +24,14 @@ LaTeX Package keymap for OS X
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
 		"command": "latexenv"},
-	{ 	"keys": ["super+l","."], 
+	{ 	"keys": ["super+l","."],
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
 		"command": "latex_env_closer"},
 
 	// Complete reference or citation
 	// cmd+l,ctrl+space suggests ST2's standard autocompletion keybinding, but for LaTeX;
-	// cmd+l,x suggests "cross" references, which both cites and refs are 
+	// cmd+l,x suggests "cross" references, which both cites and refs are
 	{ 	"keys": ["super+l","ctrl+space"],
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
@@ -76,7 +76,7 @@ LaTeX Package keymap for OS X
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
 		"command": "view_pdf"},
-	{ 	"keys": ["super+l","j"], 
+	{ 	"keys": ["super+l","j"],
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
 		"command": "jump_to_pdf", "args": {"from_keybinding": true}},
@@ -94,32 +94,32 @@ LaTeX Package keymap for OS X
 		"command": "toggle_show"},
 
 	// Wrap selected text in command or environment
-	{ "keys": ["super+l","super+c"], 
+	{ "keys": ["super+l","super+c"],
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
-		"command": "insert_snippet", "args": {"name":"Packages/LaTeXTools/Wrap in command.sublime-snippet"}},
-	{ "keys": ["super+l","super+n"],  
+		"command": "insert_snippet", "args": {"name":"Packages/LyTeXTools/Wrap in command.sublime-snippet"}},
+	{ "keys": ["super+l","super+n"],
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
-		"command": "insert_snippet", "args": {"name":"Packages/LaTeXTools/Wrap in environment.sublime-snippet"}},
+		"command": "insert_snippet", "args": {"name":"Packages/LyTeXTools/Wrap in environment.sublime-snippet"}},
 
 	// Wrap selected text in emph, bold or underline
-	{ "keys": ["super+l","super+e"],  
+	{ "keys": ["super+l","super+e"],
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
-		"command": "insert_snippet", "args": {"name":"Packages/LaTeXTools/Text emphasize.sublime-snippet"}},
-	{ "keys": ["super+l","super+b"],  
+		"command": "insert_snippet", "args": {"name":"Packages/LyTeXTools/Text emphasize.sublime-snippet"}},
+	{ "keys": ["super+l","super+b"],
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
-		"command": "insert_snippet", "args": {"name":"Packages/LaTeXTools/Text boldface.sublime-snippet"}},
-	{ "keys": ["super+l","super+u"],  
+		"command": "insert_snippet", "args": {"name":"Packages/LyTeXTools/Text boldface.sublime-snippet"}},
+	{ "keys": ["super+l","super+u"],
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
-		"command": "insert_snippet", "args": {"name":"Packages/LaTeXTools/Text underline.sublime-snippet"}},
-	{ "keys": ["super+l","super+t"],  
+		"command": "insert_snippet", "args": {"name":"Packages/LyTeXTools/Text underline.sublime-snippet"}},
+	{ "keys": ["super+l","super+t"],
 		"context":  [
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"}],
-		"command": "insert_snippet", "args": {"name":"Packages/LaTeXTools/Text monospace.sublime-snippet"}},
+		"command": "insert_snippet", "args": {"name":"Packages/LyTeXTools/Text monospace.sublime-snippet"}},
 
 
 
@@ -129,8 +129,8 @@ LaTeX Package keymap for OS X
 		// Lifted from default file
 	// insert matching $
 	// note the "key": "selector" line!
-	{ "keys": ["$"], "command": "insert_snippet", "args": {"contents": "\\$$0\\$"}, 
-	"context":  
+	{ "keys": ["$"], "command": "insert_snippet", "args": {"contents": "\\$$0\\$"},
+	"context":
 		[
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"},
 			{ "key": "setting.auto_match_enabled", "operator": "equal", "operand": true },
@@ -138,7 +138,7 @@ LaTeX Package keymap for OS X
 			/*{ "key": "following_text", "operator": "regex_contains", "operand": "^(?:\t| |\\)|])", "match_all": true },*/
 			{ "key": "preceding_text", "operator": "not_regex_contains", "operand": "[\"a-zA-Z0-9_]$", "match_all": true },
 			{ "key": "eol_selector", "operator": "not_equal", "operand": "string.quoted.double", "match_all": true }
-		] 
+		]
 	},
 	// wrap in $
 	{ "keys": ["$"], "command": "insert_snippet", "args": {"contents": "\\$${0:$SELECTION}\\$"}, "context":
@@ -150,7 +150,7 @@ LaTeX Package keymap for OS X
 	},
 	// move over closing $
 	{ "keys": ["$"], "command": "move", "args": {"by": "characters", "forward": true}, "context":
-		[	
+		[
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"},
 			{ "key": "setting.auto_match_enabled", "operator": "equal", "operand": true },
 			{ "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
@@ -170,8 +170,8 @@ LaTeX Package keymap for OS X
 
 		// overlay specifications (Tobias Schmidt)
 	// FIXME: the scope for the four following should actually be text.tex.latex.beamer, but for some reason this does not seem to work
-	{ "keys": ["<"], "command": "insert_snippet", "args": {"contents": "<${1:+-}>$0"}, 
-	"context":  
+	{ "keys": ["<"], "command": "insert_snippet", "args": {"contents": "<${1:+-}>$0"},
+	"context":
 		[
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"},
 			{"key": "selector", "operator": "not_equal", "operand": "string.other.math.tex"},
@@ -192,7 +192,7 @@ LaTeX Package keymap for OS X
 	},
 	// move over closing >
 	{ "keys": [">"], "command": "move", "args": {"by": "characters", "forward": true}, "context":
-		[	
+		[
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex"},
 			{ "key": "setting.auto_match_enabled", "operator": "equal", "operand": true },
 			{ "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
@@ -241,8 +241,8 @@ LaTeX Package keymap for OS X
 		]
 	},
 	// automatic addition of new \items when hitting Shift+Enter in a list environment
- 	{ "keys": ["shift+enter"], "command": "insert_snippet", "args": {"contents": "\n\\item $0"}, 
- 	"context":  
+ 	{ "keys": ["shift+enter"], "command": "insert_snippet", "args": {"contents": "\n\\item $0"},
+ 	"context":
 	 	[
 			{"key": "selector", "operator": "equal", "operand": "meta.function.environment.list.latex"},
 			{ "key": "setting.auto_match_enabled", "operator": "equal", "operand": true },
@@ -253,8 +253,8 @@ LaTeX Package keymap for OS X
 
 	// shift+super+{up,down} for super/subscripts with braces
 	// (courtesy of Tobias Schmidt; I only changed the keybindings)
-	{ "keys": ["shift+super+down"], "command": "insert_snippet", "args": {"contents": "_{$1}$0"}, 
-	"context":  
+	{ "keys": ["shift+super+down"], "command": "insert_snippet", "args": {"contents": "_{$1}$0"},
+	"context":
 		[
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex string.other.math"},
 			{ "key": "setting.auto_match_enabled", "operator": "equal", "operand": true },
@@ -262,8 +262,8 @@ LaTeX Package keymap for OS X
 		]
 	},
 
-	{ "keys": ["shift+super+up"], "command": "insert_snippet", "args": {"contents": "^{$1}$0"}, 
-	"context":  
+	{ "keys": ["shift+super+up"], "command": "insert_snippet", "args": {"contents": "^{$1}$0"},
+	"context":
 		[
 			{"key": "selector", "operator": "equal", "operand": "text.tex.latex string.other.math"},
 			{ "key": "setting.auto_match_enabled", "operator": "equal", "operand": true },

@@ -24,5 +24,5 @@ class latexenvCommand(sublime_plugin.TextCommand):
 			snippet = "\\\\begin{" + environment + "}\n$1\n\\\\end{" + environment + "}$0"
 			view.run_command("insert_snippet", {'contents' : snippet})
 		else:
-			sublime.status_message("LATEXTOOLS INTERNAL ERROR: could not find environment to expand")
+			sublime.status_message("LYTEXTOOLS INTERNAL ERROR: could not find environment to expand")
 

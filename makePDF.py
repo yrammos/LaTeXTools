@@ -208,7 +208,7 @@ def parseTeXlog(log):
 		# Here, make sure there was no uncaught error, in which case we do more special processing
 		if "!  ==> Fatal error occurred, no output" in line:
 			if errors == []:
-				errors.append("TeX STOPPED: fatal errors occurred but LaTeXTools did not see them")
+				errors.append("TeX STOPPED: fatal errors occurred but LyTeXTools did not see them")
 				errors.append("Check the TeX log file, and please let me know via GitHub. Thanks!")
 			continue
 		if "! Emergency stop." in line:
@@ -246,7 +246,7 @@ def parseTeXlog(log):
 			if files:
 				files.pop()
 			else:
-				errors.append("LaTeXTools cannot correctly detect file names in this LOG file.")
+				errors.append("LyTeXTools cannot correctly detect file names in this LOG file.")
 				errors.append("Please let me know via GitHub. Thanks!")
 				if DEBUG:
 					print ("Popping inexistent files")

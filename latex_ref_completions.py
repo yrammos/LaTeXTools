@@ -1,5 +1,5 @@
 # ST2/ST3 compat
-from __future__ import print_function 
+from __future__ import print_function
 import sublime
 if sublime.version() < '3000':
     # we are on ST2 and Python 2.X
@@ -48,12 +48,12 @@ def find_labels_in_files(rootdir, src, labels):
 
     # We open with utf-8 by default. If you use a different encoding, too bad.
     # If we really wanted to be safe, we would read until \begin{document},
-    # then stop. Hopefully we wouldn't encounter any non-ASCII chars there. 
+    # then stop. Hopefully we wouldn't encounter any non-ASCII chars there.
     # But for now do the dumb thing.
     try:
         src_file = codecs.open(file_path, "r", "UTF-8")
     except IOError:
-        sublime.status_message("LaTeXTools WARNING: cannot find included file " + file_path)
+        sublime.status_message("LyTeXTools WARNING: cannot find included file " + file_path)
         print ("WARNING! I can't find it! Check your \\include's and \\input's." )
         return
 
@@ -61,7 +61,7 @@ def find_labels_in_files(rootdir, src, labels):
     src_file.close()
 
     # If the file uses inputenc with a DIFFERENT encoding, try re-opening
-    # This is still not ideal because we may still fail to decode properly, but still... 
+    # This is still not ideal because we may still fail to decode properly, but still...
     m = re.search(r"\\usepackage\[(.*?)\]\{inputenc\}", src_content)
     if m and (m.group(1) not in ["utf8", "UTF-8", "utf-8"]):
         print("reopening with encoding " + m.group(1))
@@ -174,7 +174,7 @@ def get_ref_completions(view, point, autocompleting=False):
 
 # Based on html_completions.py
 #
-# It expands references; activated by 
+# It expands references; activated by
 # ref<tab>
 # refp<tab> [this adds parentheses around the ref]
 # eqref<tab> [obvious]
@@ -183,7 +183,7 @@ def get_ref_completions(view, point, autocompleting=False):
 #
 # ref_sec
 #
-# to select all labels starting with "sec". 
+# to select all labels starting with "sec".
 #
 # There is only one problem: if you have a label "sec:intro", for instance,
 # doing "ref_sec:" will find it correctly, but when you insert it, this will be done
@@ -243,13 +243,13 @@ class LatexRefCommand(sublime_plugin.TextCommand):
         # Note we now generate refs on the fly. Less copying of vectors! Win!
         def on_done(i):
             print ("latex_ref_completion called with index %d" % (i,))
-            
+
             # Allow user to cancel
             if i<0:
                 return
 
             ref = completions[i] + post_snippet
-            
+
 
             # Replace ref expression with reference and possibly post_snippet
             # The "latex_tools_replace" command is defined in latex_ref_cite_completions.py
@@ -258,5 +258,5 @@ class LatexRefCommand(sublime_plugin.TextCommand):
             caret = view.sel()[0].b
             view.sel().subtract(view.sel()[0])
             view.sel().add(sublime.Region(caret, caret))
-        
+
         view.window().show_quick_panel(completions, on_done)
