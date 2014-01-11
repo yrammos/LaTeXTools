@@ -294,10 +294,6 @@ class CmdThread(threading.Thread):
 
 	def run(self):
 		print ("Welcome to thread " + self.getName())
-		# The original command is:
-		# cmd = self.caller.make_cmd + [self.caller.file_name]
-		# But it is hacked here to route the latexmk through tmux
-		# (may be likewise applied to other platforms below):
 
 		self.caller.file_path = self.caller.file_name.replace(os.path.basename(self.caller.file_name), "")
 		# Obtain filename extension
@@ -310,15 +306,13 @@ class CmdThread(threading.Thread):
 		 	make_cmd_str = make_cmd_str + cmd_el + ' '
 		# TeX Root filename has .tex extension: lilypond-book not to be invoked
 		if self.caller.split_file_name[1].upper() in ('.TEX'):
-			cmd = ["tmux", "send-keys", "-t", "mainmux:2.1",
-				'"' + os.path.join(lytex_path, "latexcmd.sh") + '" "' + self.caller.file_path + '" "' + "latexmk -cd -e '\$pdflatex=q/pdflatex -interaction=nonstopmode -synctex=1 %S %O/' -g -pdf" + '" "' + self.caller.split_file_name[0] + '"', "C-m"];
+			cmd = '"' + os.path.join(lytex_path, "latexcmd.sh") + '" "' + self.caller.file_path + '" "' + "latexmk -cd -e '\$pdflatex=q/pdflatex -interaction=nonstopmode -synctex=1 %S %O/' -g -pdf" + '" "' + self.caller.split_file_name[0] + '"'
 			self.caller.output("[Compiling " + self.caller.file_name + "]")
 			if DEBUG:
 				print (cmd.encode('UTF-8'))
 		# TeX Root filename has .lytex extension: lilypond-book to be invoked
 		else:
-			cmd = ["tmux", "send-keys", "-t", "mainmux:2.1",
-				'"' + os.path.join(lytex_path, "lytexcmd.sh") + '" "' + self.caller.file_path + '" "' + "latexmk -cd -e '\$pdflatex=q/pdflatex -interaction=nonstopmode -synctex=1 %S %O/' -g -pdf" + '" "' + self.caller.split_file_name[0] + '"', "C-m"];
+			cmd = '"' + os.path.join(lytex_path, "lytexcmd.sh") + '" "' + self.caller.file_path + '" "' + "latexmk -cd -e '\$pdflatex=q/pdflatex -interaction=nonstopmode -synctex=1 %S %O/' -g -pdf" + '" "' + self.caller.split_file_name[0] + '"'
 			self.caller.output("[Compiling " + self.caller.file_name + "]")
 			if DEBUG:
 				print (cmd.encode('UTF-8'))
@@ -342,8 +336,8 @@ class CmdThread(threading.Thread):
 			startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 			proc = subprocess.Popen(cmd, startupinfo=startupinfo)
 		else:
-			proc = subprocess.Popen(cmd)
-			# The folowing hackwork is intended to block the thread until the tmux-resident cmd is completed.
+			proc = subprocess.Popen(cmd, shell=True)
+			# The folowing hackwork should block the thread until the cmd is completed.
 			time.sleep(2)
 			print("LyTeXTools start: ", time.gmtime())
 			proc = subprocess.Popen(os.path.join(lytex_path, "polltexmk.sh"))
