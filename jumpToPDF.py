@@ -5,13 +5,14 @@ if sublime.version() < '3000':
     # we are on ST2 and Python 2.X
 	_ST3 = False
 	import getTeXRoot
+	import jump_aux
 else:
 	_ST3 = True
 	from . import getTeXRoot
+	from . import jump_aux
 
 
-import sublime_plugin, os.path, subprocess, time, re
-from . import jump_aux
+import sublime_plugin, os.path, subprocess, time, re, codecs
 
 
 # Jump to current line in PDF file
@@ -21,8 +22,8 @@ class jump_to_pdfCommand(sublime_plugin.TextCommand):
 	# in the LilyPond-generated .tex file.
 	def map_lytex2tex(self, old_line, fileName):
 		# Ensure that both files (.tex and .lytex) are open.
-		tex = open(fileName + '.tex', encoding = 'UTF-8')
-		lytex = open(fileName + '.lytex', encoding = 'UTF-8')
+		tex = codecs.open(fileName + '.tex', "r", "UTF-8", "ignore")
+		lytex = codecs.open(fileName + '.lytex', "r", "UTF-8", "ignore")
 
 		# Initialize the line number offset (iteratively computed as "cur_sigma").
 		cur_sigma = 0
