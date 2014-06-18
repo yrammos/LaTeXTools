@@ -311,14 +311,14 @@ class CmdThread(threading.Thread):
 		# TeX Root filename has .tex extension: lilypond-book not to be invoked
 		if self.caller.split_file_name[1].upper() in ('.TEX'):
 			cmd = ["tmux", "send-keys", "-t", "mainmux:2.1",
-				"cd " + self.caller.file_path + " && echo lat > .lytexerr.log && " + make_cmd_str + self.caller.file_name + " && echo ok > .lytexerr.log", "C-m"];
+				'"' + os.path.join(lytex_path, "latexcmd.sh") + '" "' + self.caller.file_path + '" "' + "latexmk -cd -e '\$pdflatex=q/pdflatex -interaction=nonstopmode -synctex=1 %S %O/' -g -pdf" + '" "' + self.caller.split_file_name[0] + '"', "C-m"];
 			self.caller.output("[Compiling " + self.caller.file_name + "]")
 			if DEBUG:
 				print (cmd.encode('UTF-8'))
 		# TeX Root filename has .lytex extension: lilypond-book to be invoked
 		else:
 			cmd = ["tmux", "send-keys", "-t", "mainmux:2.1",
-				"cd " + self.caller.file_path + " && echo lil > .lytexerr.log && " + "lilypond-book -f latex --pdf " + self.caller.file_name + " && echo lat > .lytexerr.log && " + make_cmd_str + self.caller.split_file_name[0] + " && echo ok > .lytexerr.log", "C-m"];
+				'"' + os.path.join(lytex_path, "lytexcmd.sh") + '" "' + self.caller.file_path + '" "' + "latexmk -cd -e '\$pdflatex=q/pdflatex -interaction=nonstopmode -synctex=1 %S %O/' -g -pdf" + '" "' + self.caller.split_file_name[0] + '"', "C-m"];
 			self.caller.output("[Compiling " + self.caller.file_name + "]")
 			if DEBUG:
 				print (cmd.encode('UTF-8'))
@@ -343,15 +343,12 @@ class CmdThread(threading.Thread):
 			proc = subprocess.Popen(cmd, startupinfo=startupinfo)
 		else:
 			proc = subprocess.Popen(cmd)
-			# The folowing hackwork should block the thread until the tmux-resident cmd is completed.
-			# If it fails, please ensure that there are no "stopped" (status code: T) processes for latex
-			# or perl when running ps -A (this can happen if you have stopped the make process
-			# using ^Z and can be fixed by manually running kill).
+			# The folowing hackwork is intended to block the thread until the tmux-resident cmd is completed.
 			time.sleep(2)
-			print("Time before wait: ", time.gmtime())
+			print("LyTeXTools start: ", time.gmtime())
 			proc = subprocess.Popen(os.path.join(lytex_path, "polltexmk.sh"))
 			proc.wait()
-			print("Time after wait: ", time.gmtime())
+			print("LyTeXTools finish: ", time.gmtime())
 
 		# restore path if needed
 		if self.caller.path:
