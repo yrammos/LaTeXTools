@@ -1,7 +1,7 @@
 #! /bin/bash
 # cd " + self.caller.file_path + " && echo lat > .lytexerr.log && " + make_cmd_str + self.caller.file_name + " && echo ok > .lytexerr.log"
 
-trap "echo 'STOPPED' > ~/.lytexstat.log" SIGHUP SIGINT SIGTERM
+trap "echo 'STOPPED' > ~/.lytexstat.log" SIGHUP SIGINT SIGTERM EXIT
 
 echo "$1"
 echo "$2"
