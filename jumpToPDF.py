@@ -22,8 +22,8 @@ class jump_to_pdfCommand(sublime_plugin.TextCommand):
 	# in the LilyPond-generated .tex file.
 	def map_lytex2tex(self, old_line, fileName):
 		# Ensure that both files (.tex and .lytex) are open.
-		tex = codecs.open(fileName + '.tex', "r", "UTF-8", "ignore")
-		lytex = codecs.open(fileName + '.lytex', "r", "UTF-8", "ignore")
+		tex = codecs.open(fileName + u'.tex', "r", "UTF-8", "ignore")
+		lytex = codecs.open(fileName + u'.lytex', "r", "UTF-8", "ignore")
 
 		# Initialize the line number offset (iteratively computed as "cur_sigma").
 		cur_sigma = 0
