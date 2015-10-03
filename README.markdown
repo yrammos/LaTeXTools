@@ -1,6 +1,8 @@
 #LyTeXTools: LilyPond-aware LaTeXTools for Sublime Text 2 & 3
 by [Yannis Rammos](www.twitter.com/yannisrammos)
 
+[**UPDATE: If you have not yet upgraded to OS X El Capitan (10.11.x), and LyTeXTools has stopped working, please read [Path Considerations].**]
+
 This package adds `lilypond-book` support to [Marciano Siniscalchi’s](http://tekonomist.wordpress.com/) [LaTeXTools](http://github.com/SublimeText/LaTeXTools) for [Sublime Text 2](http://www.sublimetext.com/2) and [Sublime Text 3](http://www.sublimetext.com/3).
 
 A component of [GNU LilyPond](http://lilypond.org), the formidable music typesetter, `lilypond-book` enables LaTeX writers to include LilyPond code snippets within LaTeX documents, thereby freely mixing text with musical notation. It is a command-line preprocessor that “extracts snippets of music from your document, runs LilyPond on them, and outputs the document with pictures substituted for the music.”
@@ -62,6 +64,8 @@ The process will likely fail unless a valid path to the `lilypond-book` binary i
         	    "path" : "$PATH:/usr/texbin:/usr/local/bin:/Applications/LilyPond.app/Contents/Resources/bin/"
             	...
 	        }
+
+The LyTeXTools build engine assumes that you are running OS X El Capitan (10.11.x) or later. **If you are running an earlier version (<10.11) **, please replace `/Library/TeX/texbin` with `/usr/texbin` in the `LaTeX.sublime-build` file. This is a kludge, but I currently have no time to provide a more elegant solution (and besides, I plan to update LyTeXTools to bring it up to date with the mother project (LaTeXTools), which provides a superior and customizable build engine mechanism).
 
 ## Using LyTeXTools
 
@@ -192,6 +196,9 @@ Tab trigger expanding to `% \closelytex`.
 All output of the `lilypond-book` (pre-processing) stage is flushed to `./lilypond-book.log` within the directory that LyTeXTools were invoked from. Building is aborted if any errors are encountered during this stage. Otherwise, all pre-processed content is passed on to LaTeX, with errors thereby handled by the log parser provided with the original LaTeXTools.
 
 ## Version history
+
+**3 October 2015**
+- UPDATED: The build engine now assumes that the system is running OS X El Capitan (10.11.x). If you are still using an older version of OS X, and LyTeXTools has stopped working, please read [Path Considerations].
 
 **18 June 2014**
 - FIXED: A bug that prevented LyTeXTools from detecting that compilation has been completed.
