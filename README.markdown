@@ -1,7 +1,7 @@
 #LyTeXTools: LilyPond-aware LaTeXTools for Sublime Text 2 & 3
 by [Yannis Rammos](www.twitter.com/yannisrammos)
 
-[**UPDATE: If you have not yet upgraded to OS X El Capitan (10.11.x), and LyTeXTools has stopped working, please read [Path Considerations].**]
+[**UPDATE: If you have not yet upgraded to OS X El Capitan (10.11.x), and LyTeXTools has stopped working, please read [Path Considerations](https://github.com/yrammos/LyTeXTools#path-considerations) below.**]
 
 This package adds `lilypond-book` support to [Marciano Siniscalchi’s](http://tekonomist.wordpress.com/) [LaTeXTools](http://github.com/SublimeText/LaTeXTools) for [Sublime Text 2](http://www.sublimetext.com/2) and [Sublime Text 3](http://www.sublimetext.com/3).
 
@@ -33,7 +33,7 @@ The following settings override those of the original LaTeXTools. All other LaTe
 
 ### Jumping from/to PDF (SyncTeX)
 
-“Forward” and “inverse” search with `.lytex` files are non-trivial because SyncTeX only provides a mapping between the PDF and the LilyPond-generated `.tex`, whereas the original source file is the `.lytex`. LyTeXTools undertakes the missing link, namely a bidirectional mapping between `.tex` and `.lytex` line numbers.
+“Forward” and “inverse” searches within `.lytex` files are non-trivial because SyncTeX only provides a mapping between the PDF and the LilyPond-generated `.tex`. LyTeXTools undertakes the missing link, namely a bidirectional mapping between `.tex` and `.lytex` line numbers.
 
 Inverse search from the PDF (Skim.app) to the `.lytex` or `.tex` source is provided by the `sublsync` script, a central component of this package. Its purpose is to store the SyncTeX-generated coordinates (source file name, line number) into a file whence LyTeXTools can then retrieve them.
 
@@ -77,7 +77,7 @@ LyTeXTools decides whether to invoke `lilypond-book` **solely on the basis of th
 
 It is strongly recommended that you **use the `.lytex` extension** with the root file of your project, even if it does not contain any LilyPond code in itself: Doing so will instruct LyTeXTools to trigger `lilypond-book` on the entire project (as a `lilypond-book` “make” session of sorts), and therefore to preprocess any other `.lytex` files that you may have included in your project with `\input` statements, rendering a manual run of `lilypond-book` on each individual `.lytex` project file unnecessary.
 
-Of course you will need to explicitly include this extension in the `% !TEX root` flags at the top of all your `.tex.` and `.lytex` project files:
+You will also need to explicitly include this extension in the `% !TEX root` flags at the top of all your `.tex.` and `.lytex` project files:
 
     % !TEX root = my_root_file_name.lytex
 
