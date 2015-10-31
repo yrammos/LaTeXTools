@@ -21,7 +21,7 @@ To avoid confusion, and given its lack of support for Windows at present, LyTeXT
 
 	git clone https://github.com/yrammos/LyTeXTools.git
 
-* Please note that the stable version of LyTeXTools is in the `lytextools` branch, not the `master` branch! Run `git checkout lilypond2latexmk` after cloning to ensure that you are on that branch.
+* Please note that the stable version of LyTeXTools is in the `lytextools` branch, not the `master` branch! Run `git checkout lytextools` after cloning to ensure that you are on that branch.
 
 New users unfamiliar with Marciano Siniscalchi’s LaTeXTools are advised to read his detailed and lucid [documentation](http://github.com/SublimeText/LaTeXTools#requirements-and-setup) first. The following notes only address areas where the two packages diverge.
 
@@ -35,7 +35,7 @@ The following settings override those of the original LaTeXTools. All other LaTe
 
 “Forward” and “inverse” searches within `.lytex` files are non-trivial because SyncTeX only provides a mapping between the PDF and the LilyPond-generated `.tex`. LyTeXTools undertakes the missing link, namely a bidirectional mapping between `.tex` and `.lytex` line numbers.
 
-Inverse search from the PDF (Skim.app) to the `.lytex` or `.tex` source is provided by the `sublsync` script, a central component of this package. Its purpose is to store the SyncTeX-generated coordinates (source file name, line number) into a file whence LyTeXTools can then retrieve them.
+Inverse search from the PDF (Skim.app) to the `.lytex` or `.tex` source is provided by the `sublsync` script, a central component of this package. Its purpose is to store the SyncTeX-generated coordinates (source file name, line number) within a file whence LyTeXTools can then retrieve them.
 
 By default, LyTeXTools expects this file to be `~/.sublatex.txt`. This location may be overriden via a `synctex_output` key-value pair in a `LyTeXTools.sublime-settings` JSON file, for example:
 
@@ -65,7 +65,7 @@ The process will likely fail unless a valid path to the `lilypond-book` binary i
             	...
 	        }
 
-The LyTeXTools build engine assumes that you are running OS X El Capitan (10.11.x) or later. **If you are running an earlier version (<10.11) **, please replace `/Library/TeX/texbin` with `/usr/texbin` in the `LaTeX.sublime-build` file. This is a kludge, but I currently have no time to provide a more elegant solution (and besides, I plan to update LyTeXTools to bring it up to date with the mother project (LaTeXTools), which provides a superior and customizable build engine mechanism).
+The LyTeXTools build engine assumes that you are running OS X El Capitan (10.11.x) or later. **If you are running an earlier version (<10.11)**, please replace `/Library/TeX/texbin` with `/usr/texbin` in the `LaTeX.sublime-build` file. This is a kludge, but I currently have no time to provide a more elegant solution (and besides, I plan to update LyTeXTools to bring it up to date with the mother project (LaTeXTools), which provides a superior and customizable build engine mechanism).
 
 ## Using LyTeXTools
 
